@@ -16,7 +16,6 @@ export default class App extends React.Component{
 		return (
 			<div className="container">
 				<Router history={history}>
-					<Header history={history} />
 					<Route exact path="/">
 						{Authentication.isAuthenticated() 
 							? <Redirect to={AUTH_LANDING} /> 

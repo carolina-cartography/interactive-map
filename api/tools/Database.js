@@ -1,17 +1,14 @@
 const Mongoose = require('mongoose')
 
-const dbUsername = "";
-const dbPassword = "";
-const dbHost = "";
-const dbName = "";
+const { username, password, host, name } = require('./../../config').database
 
 module.exports = {
 
 	setup: () => {
-		process.stdout.write(`Connecting to Mongo at ${dbHost}...`)
+		process.stdout.write(`Connecting to Mongo at ${host}...`)
 		let auth = ''
-		if (dbUsername && dbPassword) auth = `${dbUsername}:${dbPassword}@`
-		return Mongoose.connect(`mongodb://${auth}${dbHost}/${dbName}`, {
+		if (username && password) auth = `${username}:${password}@`
+		return Mongoose.connect(`mongodb://${auth}${host}/${name}`, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 			useCreateIndex: true,

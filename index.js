@@ -2,7 +2,7 @@ const Express = require('express')
 const Morgan = require('morgan')
 const api = require('./api')
 
-const port = 3000;
+const { port } = require('./config')
 
 async function start () {
 
