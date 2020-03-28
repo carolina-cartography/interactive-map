@@ -1,4 +1,4 @@
 node_modules
 public/src/*
 *.DS_Store
-config.js
+environment.sh

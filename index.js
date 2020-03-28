@@ -2,9 +2,25 @@ const Express = require('express')
 const Morgan = require('morgan')
 const api = require('./api')
 
-const { port } = require('./config')
+const REQUIRED_ENV = [
+	'port',
+	'secret',
+	'mongo_host',
+	'mongo_name',
+	'mongo_user',
+	'mongo_pass',
+];
 
+// Start dependenies and listen to port
 async function start () {
+
+	// Check for required environment variables
+	for (const ev of REQUIRED_ENV) {
+		if (process.env[ev] === undefined) {
+			console.log(`Missing required env variable: ${ev}`)
+			return
+		}
+	}
 
 	// Setup server
 	const server = Express()
@@ -20,7 +36,7 @@ async function start () {
 	})
 
 	// Listen on port
-	server.listen(port, () => console.log(`interactive-map listening on port ${port}...`))
+	server.listen(process.env.port, () => console.log(`interactive-map listening on port ${process.env.port}...`))
 }
 
 start()
