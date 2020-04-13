@@ -52,7 +52,7 @@ function ObjectStaticMethods (schema) {
 			// If an object exists, recursively make another GUID.
 			if (object) return model.GUID(callback);
 
-			// Otherwise, callback with GUID
+			// Otherwise, finish with GUID
 			callback(err, GUID);
 		});
 	};
