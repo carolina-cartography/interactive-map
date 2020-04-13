@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { AUTH_LANDING } from './../tools/Constants'
+import { LANDING } from './../tools/Constants'
 import Form from '../components/Form'
 import View from '../components/View';
 
@@ -13,7 +13,7 @@ export default class LoginView extends View {
 
 	render() {
 		return (
-			<div className="view">
+			<div className="view container">
 				<h1>{"Login"}</h1>
 				<Form
 					history={this.props.history}
@@ -22,7 +22,7 @@ export default class LoginView extends View {
 						email: { type: 'email', title: 'Email' },
 						password: { type: 'password', title: 'Password'}
 					}}
-					redirect={AUTH_LANDING} />
+					redirect={LANDING} />
 				<Link to={"/signup"}>Sign up</Link>
 			</div>
 		);

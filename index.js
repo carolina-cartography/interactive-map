@@ -1,3 +1,4 @@
+const path = require('path');
 const Express = require('express')
 const Morgan = require('morgan')
 const api = require('./api')
@@ -32,7 +33,7 @@ async function start () {
 	// Setup UI routes
 	server.use(Express.static('public'))
 	server.get('*', function (req, res) {
-	    res.sendFile('./public/index.html', {"root": "."})
+	    res.sendFile('./public/index.html', {root: "."})
 	})
 
 	// Listen on port

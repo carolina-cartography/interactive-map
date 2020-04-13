@@ -1,3 +1,5 @@
+export const APP_NAME = "Carolina Cartography Collective"
+export const LOGO_LINK = "https://carolinacartography.org"
+
 // Default Routes
-export const AUTH_LANDING = "/map"
-export const NO_AUTH_LANDING = "/login"
+export const LANDING = "/maps"
