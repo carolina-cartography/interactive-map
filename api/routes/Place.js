@@ -14,9 +14,19 @@ module.exports = router => {
 		// Synchronously perform the following tasks...
 		Async.waterfall([
 
-			// Find all places
+			// Validate parameters
 			(callback) => {
-				Place.find({}, (err, places) => {
+				var validations = [
+					Validation.string('Map', req.body.map)
+				];
+				callback(Validation.catchErrors(validations))
+			},
+
+			// Find places for map
+			(callback) => {
+				Place.find({
+					map: req.body.map,
+				}, (err, places) => {
 					Secretary.addToResponse(res, "places", places);
 					callback(err, places)
 				})
@@ -40,8 +50,11 @@ module.exports = router => {
 
 			// Validate parameters
 			(token, callback) => {
-				var validations = [];
-				if (req.body.description) validations.push(Validation.string('Description', req.body.description))
+				var validations = [
+					Validation.coordinates('Coordinates', req.body.coordinates),
+					Validation.string('Map', req.body.map)
+				];
+				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
 				callback(Validation.catchErrors(validations), token)
 			},
 
@@ -49,7 +62,9 @@ module.exports = router => {
 			(token, callback) => {
 				Place.create({
 					'user': token.user,
-					'description': req.body.description,
+					'map': req.body.map,
+					'coordinates': req.body.coordinates,
+					'metadata': req.body.metadata,
 				}, (err, place) => {
 					Secretary.addToResponse(res, "place", place)
 					callback(err);
@@ -77,7 +92,8 @@ module.exports = router => {
 				var validations = [
 					Validation.string('GUID', req.body.guid)
 				];
-				if (req.body.description) validations.push(Validation.string('Description', req.body.description))
+				if (req.body.coordinates) validations.push(Validtion.coordinates('Coordinates', req.body.coordinates))
+				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
 				callback(Validation.catchErrors(validations), token)
 			},
 
@@ -95,7 +111,8 @@ module.exports = router => {
 			// Edit place, add to reply
 			(place, callback) => {
 				place.edit({
-					'description': req.body.description,
+					'coordinates': req.body.coordinates,
+					'metadata': req.body.metadata,
 				}, (err, place) => {
 					Secretary.addToResponse(res, "place", place)
 					callback(err);

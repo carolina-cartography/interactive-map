@@ -87,6 +87,12 @@ function isInvalidSort (input) {
 	return Messages.fieldErrors.sortKey;
 };
 
+function isInvalidCoordinates (input) {
+	for (var i in input) {
+		if (isNaN(input[i])) return Messages.fieldErrors.isInvalid;
+	}
+}
+
 // Exports =====================================================================
 
 module.exports.catchErrors = function (errors) {
@@ -141,3 +147,14 @@ module.exports.sort = function (name, input) {
 		isInvalidSort(input),
 	], name);
 };
+
+module.exports.coordinates = function (name, input) {
+	return getNamedErrorFromArray([
+		isInvalidArray(input),
+		isInvalidCoordinates(input),
+	], name);
+};
+
+module.exports.metadata = function (name, input) {
+	return; // Don't validate for now
+}

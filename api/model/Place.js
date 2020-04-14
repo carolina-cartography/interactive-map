@@ -2,6 +2,7 @@ const Mongoose = require('mongoose')
 const Async = require('async')
 const Database = require('../tools/Database')
 const Dates = require('../tools/Dates')
+const User = require('./User');
 
 function PlaceProperties (schema) {
     schema.add({
@@ -10,7 +11,7 @@ function PlaceProperties (schema) {
 			'index': true,
 			'required': true,
 		},
-		'description': {
+		'map': {
 			'type': String,
 			'index': true,
 		},
@@ -23,14 +24,18 @@ function PlaceProperties (schema) {
 				'type': [Number],
 				'index': "2dsphere",
 			}
-		}
+		},
+		'metadata': {
+			'type': Object,
+			'default': {},
+		},
     });
 };
 
 function PlaceStaticMethods (schema) {
 
 	// Create: creates a new place in the database
-	schema.statics.create = function ({user, description}, callback) {
+	schema.statics.create = function ({user, map, coordinates, metadata}, callback) {
 
 		// Save reference to model
 		var Place = this;
@@ -53,21 +58,25 @@ function PlaceStaticMethods (schema) {
 					'guid': GUID
 				};
 
-				// Setup database update
-				let update = {
-					'$set': {
-						'guid': GUID,
-						'user': user,
-						'description': description,
-						'dateCreated': Dates.now(),
-					}
-				};
+				// Setup database update with required fields
+				let set = {
+					guid: GUID,
+					user,
+					location: {
+						coordinates,
+					},
+					map,
+					dateCreated: Dates.now(),
+				}
+
+				// Setup database update with optional fields
+				if (metadata) set.metadata = metadata;
 				
 				// Make database update
 				Database.update({
-					'model': Place,
-					'query': query,
-					'update': update,
+					model: Place,
+					query: query,
+					update: {'$set': set},
 				}, function (err, place) {
 					callback(err, place);
 				});
@@ -80,30 +89,56 @@ function PlaceStaticMethods (schema) {
 };
 
 function PlaceInstanceMethods (schema) {
-	schema.methods.edit = function ({description}, callback) {
+
+	schema.methods.format = function (callback) {
+		let thisPlace = this.toObject();
+		Async.waterfall([
+
+			// Add user name to place
+			(callback) => {
+				User.findOne({
+					guid: thisPlace.user,
+				}, (err, user) => {
+					thisPlace.userName = user.name;
+					callback(err)
+				})
+			}
+
+		], (err) => {
+			callback(err, thisPlace)
+		});
+	};
+
+	schema.methods.edit = function ({coordinates, metadata}, callback) {
 
 		// Save reference to model
 		var Place = this;
 
 		// Setup query with GUID
 		var query = {
-			'guid': this.guid,
+			guid: this.guid,
 		};
 
-		// Setup database update
+		// Setup database update with required fields
 		var set = {
-			'lastModified': Dates.now(),
+			lastModified: Dates.now(),
 		};
-		if (description) set.description = description;
-		var update = {
-			'$set': set
-		};
+		var unset = {}
+
+		// Setup database update with optional fields
+		if (coordinates) set.location = { coordinates };
+		if (metadata) {
+			for (var key in metadata) {
+				if (metadata[key] === null) unset[`metadata.${key}`] = true;
+				else set[`metadata.${key}`] = metadata[key];
+			}
+		}
 
 		// Make database update
 		Database.update({
-			'model': Place.constructor,
-			'query': query,
-			'update': update,
+			model: Place.constructor,
+			query: query,
+			update: {'$set': set, '$unset': unset},
 		}, function (err, place) {
 			callback(err, place);
 		});
@@ -115,7 +150,7 @@ function PlaceInstanceMethods (schema) {
 		var Place = this;
 
 		Place.deleteOne({
-			'guid': this.guid,
+			guid: this.guid,
 		}, function (err, place) {
 			callback(err, place);
 		});

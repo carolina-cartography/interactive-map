@@ -8,7 +8,6 @@ export default class PlaceModal extends React.Component {
 	}
 
 	componentDidMount() {
-		console.log(this.props);
 	}
 
 	close() {
@@ -16,13 +15,13 @@ export default class PlaceModal extends React.Component {
 	}
 
 	render() {
-		const { leafletPlace } = this.props;
+		const { place } = this.props;
 		return (
 			<div className="modal-container">
 				<div className="underlay" onClick={this.close}></div>
 				<div className="modal">
-					{`This overlay can be used to add a title and description to the new 
-					marker at ${leafletPlace.marker._latlng}`}
+					{`User: ${place.userName}`}<br />
+					{`Location: ${place.location.coordinates}`}
 				</div>
 			</div>
 		);
