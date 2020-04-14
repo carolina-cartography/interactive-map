@@ -14,6 +14,16 @@ function PlaceProperties (schema) {
 			'type': String,
 			'index': true,
 		},
+		'location': {
+			'type': {
+				'type': String,
+				'default': "Point"
+			},
+			'coordinates': {
+				'type': [Number],
+				'index': "2dsphere",
+			}
+		}
     });
 };
 

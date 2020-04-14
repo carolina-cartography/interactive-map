@@ -1,6 +1,8 @@
 import React from 'react'
 import View from './../../components/View';
 import Authentication from './../../tools/Authentication';
+import Requests from './../../tools/Requests';
+import PlaceModal from './../../components/PlaceModal';
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,6 +16,11 @@ export default class MapView extends View {
 
 	constructor(props) {
 		super(props)
+		this.closeModal = this.closeModal.bind(this);
+	}
+
+	state = {
+		selectedLeafletPlace: null,
 	}
 
 	componentDidMount() {
@@ -36,12 +43,43 @@ export default class MapView extends View {
 		if (isAuthenticated) {
 			map.pm.addControls({
 				position: 'topleft',
+				drawMarker: true,
+				drawCircleMarker: false,
+				drawPolyline: false,
+				drawRectangle: false,
+				drawPolygon: false,
 				drawCircle: false,
+				editMode: false,
+				dragMode: false, 
+				cutPolygon: false,
+				removalMode: false,
 			});
+
+			// When a marker is created...
+			map.on("pm:create", e => {
+				// Requests.do('place.create', {
+				// 	latitude: e.marker.
+				// })
+
+				// this.setState({selectedLeafletPlace: e})
+			})
 		}
 	}
 
+	closeModal() {
+		this.setState({ selectedLeafletPlace: null });
+	}
+
 	render() {
-		return <div id="leaflet"></div>;
+		const { selectedLeafletPlace } = this.state;
+		return (
+			<React.Fragment>
+				<div id="leaflet"></div>
+				{selectedLeafletPlace && <PlaceModal 
+					leafletPlace={selectedLeafletPlace}
+					close={this.closeModal}
+				/>}
+			</React.Fragment>
+		);
   	}
 }
