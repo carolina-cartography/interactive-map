@@ -93,9 +93,9 @@ export default class MapView extends View {
 			var places = response.places;
 			for (var i in places) {
 				var place = places[i];
-				var marker = L.marker(place.location.coordinates);
+				var marker = L.marker(place.location.coordinates, { place });
 				marker.on('click', (e) => {
-					this.setState({ selectedPlace: place });
+					this.setState({ selectedPlace: e.target.options.place });
 				})
 				marker.addTo(map);
 			}

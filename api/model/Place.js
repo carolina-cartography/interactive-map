@@ -92,6 +92,7 @@ function PlaceInstanceMethods (schema) {
 
 	schema.methods.format = function (callback) {
 		let thisPlace = this.toObject();
+		console.log(thisPlace);
 		Async.waterfall([
 
 			// Add user name to place
@@ -99,6 +100,7 @@ function PlaceInstanceMethods (schema) {
 				User.findOne({
 					guid: thisPlace.user,
 				}, (err, user) => {
+					console.log(user);
 					thisPlace.userName = user.name;
 					callback(err)
 				})

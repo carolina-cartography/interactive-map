@@ -10,6 +10,9 @@ export default class PlaceModal extends React.Component {
 	componentDidMount() {
 	}
 
+	componentWillUnmount() {
+	}
+
 	close() {
 		this.props.close();
 	}
