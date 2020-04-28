@@ -27,6 +27,7 @@ export default class MapView extends View {
 
 	state = {
 		selectedPlace: null,
+		newPlace: null,
 	}
 
 	componentDidMount() {
@@ -51,10 +52,7 @@ export default class MapView extends View {
 	}
 
 	setupAuthenticatedMap() {
-		const user = Authentication.getUser();
-
-		// If user doesn't exist (no one logged in), don't finish function
-		if (!user) return;
+		if (!Authentication.isAuthenticated()) return;
 
 		// Add supported controls
 		map.pm.addControls({
@@ -73,49 +71,78 @@ export default class MapView extends View {
 
 		// When a marker is created...
 		map.on("pm:create", e => {
-			// Make a place.create call using coordinates and user
-			Requests.do('place.create', {
-				user: user.guid,
-				map: MAP_ID,
-				coordinates: [e.marker._latlng.lat, e.marker._latlng.lng],
-			}).then((response) => {
-				// Handle response here
-			}).catch((err) => {
-				// Handle error here
-			})
+
+			// Add 'newPlace' to state, which triggers modal
+			this.setState({ newPlace: e.marker });
+
+			console.log(e)
 		})
 	}
 
 	loadPlaces() {
-		return Requests.do('place.get', {
+
+		// Get this map's places from the database
+		Requests.do('place.get', {
 			map: MAP_ID,
 		}).then((response) => {
-			var places = response.places;
-			for (var i in places) {
-				var place = places[i];
+
+			// For every place returned by database...
+			for (var i in response.places) {
+				var place = response.places[i];
+
+				// Setup a marker...
 				var marker = L.marker(place.location.coordinates, { place });
+
+				// On marker click, add 'selectedPlace' to state, which triggers modal
 				marker.on('click', (e) => {
 					this.setState({ selectedPlace: e.target.options.place });
 				})
+
+				// Add marker to map
 				marker.addTo(map);
 			}
-		}).catch((err) => {
-			console.log('Error getting places...')
-			console.log(err);
-		})
+		}).catch((err) => {});
 	}
 
-	closeModal() {
-		this.setState({ selectedPlace: null });
+	closeModal(place) {
+		const { newPlace } = this.state;
+
+		// If modal was opened for a new place...
+		if (newPlace) {
+
+			// Remove the original place
+			map.removeLayer(newPlace)
+
+			// If the place was saved, re-add with database place object
+			if (place) {
+				var marker = L.marker(newPlace._latlng, { place });
+				marker.on('click', (e) => {
+					this.setState({ selectedPlace: e.target.options.place });
+				})
+				marker.addTo(map)
+			}
+		}
+		
+		// Create state
+		this.setState({ selectedPlace: null, newPlace: null });
 	}
 
 	render() {
-		const { selectedPlace } = this.state;
+		const { selectedPlace, newPlace } = this.state;
+
+		// Determine whether to show modal
+		let showModal = false;
+		if (selectedPlace || newPlace) {
+			showModal = true;
+		}
+
 		return (
 			<React.Fragment>
 				<div id="leaflet"></div>
-				{selectedPlace && <PlaceModal 
+				{showModal && <PlaceModal
+					mapID={MAP_ID}
 					place={selectedPlace}
+					newPlace={newPlace}
 					close={this.closeModal}
 				/>}
 			</React.Fragment>

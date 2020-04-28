@@ -11,9 +11,11 @@ const Validation = {
 
 	validateFieldLengths: function (fields, state) {
 		Object.entries(fields).forEach(([key, field]) => {
-			if (field.minLength && state[key].length < field.minLength ||
-				field.required && state[key].length < 1) {
-				if (field.length < 1) state.fieldErrors[key] = `${field.title} is required`;
+			if (
+				(field.minLength && (!state[key] || state[key].length < field.minLength)) ||
+				(field.required && (!state[key] || state[key].length < 1))
+			) {
+				if (!state[key] || state[key].length < 1) state.fieldErrors[key] = `${field.title} is required`;
 				else state.fieldErrors[key] = `${field.title} is too short`;
 			}
 		})

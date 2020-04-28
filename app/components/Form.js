@@ -11,6 +11,7 @@ class Form extends React.Component {
 		title: PropTypes.string,
 		fields: PropTypes.object,
 		endpoint: PropTypes.string,
+		formatRequest: PropTypes.func,
 		onSuccess: PropTypes.func,
 		redirect: PropTypes.string,
 		css: PropTypes.string,
@@ -39,7 +40,7 @@ class Form extends React.Component {
 	handleSubmit = event => {
 		event.preventDefault();
 		const state = this.state;
-		const { fields, endpoint, onSuccess, redirect } = this.props;
+		const { fields, endpoint, onSuccess, formatRequest, redirect } = this.props;
 
 		// Validate fields
 		Validation.validateFormState(fields, state);
@@ -48,12 +49,17 @@ class Form extends React.Component {
 		}
 
 		// Prepare request
-		const request = {}
+		let request = {}
 		Object.entries(fields).forEach(([key, field]) => {
 			if (fields[key].prepare) 
 				request[key] = fields[key].prepare(state[key]);
 			else request[key] = state[key];
 		})
+
+		// Format request
+		if (formatRequest) {
+			request = formatRequest(request);
+		}
 
 		// Make request
 		this.setState({ loading: true });
