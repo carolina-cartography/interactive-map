@@ -1,9 +1,9 @@
 import React from 'react'
 
 const renderElement = props => {
-	const { type, value, placeholder, handler } = props;
+	const { type, value, rows, placeholder, handler } = props;
 	if (type === 'textarea')
-		return <textarea value={value} onChange={handler} placeholder={placeholder}></textarea>
+		return <textarea value={value} rows={rows} onChange={handler} placeholder={placeholder}></textarea>
 	else 
 		return <input type={type} value={value} onChange={handler} placeholder={placeholder} />
 }

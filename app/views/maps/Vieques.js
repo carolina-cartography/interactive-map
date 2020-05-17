@@ -74,8 +74,6 @@ export default class MapView extends View {
 
 			// Add 'newPlace' to state, which triggers modal
 			this.setState({ newPlace: e.marker });
-
-			console.log(e)
 		})
 	}
 
