@@ -61,7 +61,7 @@ export default class MapView extends View {
 			drawCircleMarker: false,
 			drawPolyline: false,
 			drawRectangle: false,
-			drawPolygon: false,
+			drawPolygon: true,
 			drawCircle: false,
 			editMode: false,
 			dragMode: false, 
@@ -72,8 +72,10 @@ export default class MapView extends View {
 		// When a marker is created...
 		map.on("pm:create", e => {
 
+			console.log(e)
+
 			// Add 'newPlace' to state, which triggers modal
-			this.setState({ newPlace: e.marker });
+			this.setState({ newPlace: e.layer });
 		})
 	}
 
