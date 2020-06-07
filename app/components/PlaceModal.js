@@ -9,7 +9,6 @@ export default class PlaceModal extends React.Component {
 
 	constructor(props) {
 		super(props)
-		console.log(props)
 		this.close = this.close.bind(this)
 		this.formatRequest = this.formatRequest.bind(this)
 		this.onSuccess = this.onSuccess.bind(this)
@@ -43,15 +42,17 @@ export default class PlaceModal extends React.Component {
 
 		// Add coordinates & map data to request
 		if (newPlace._latlng) {
+			formattedRequest.type = "point"
 			formattedRequest.coordinates = [
 				newPlace._latlng.lat,
 				newPlace._latlng.lng
 			];
 		} else if (newPlace._latlngs) {
-			
+			formattedRequest.type = "polygon"
+			let geojson = newPlace.toGeoJSON()
+			formattedRequest.coordinates = geojson.geometry.coordinates;
 		}
 		
-
 		return formattedRequest
 	}
 
@@ -61,8 +62,6 @@ export default class PlaceModal extends React.Component {
 
 	setupModalMap() {
 		const { newPlace, place } = this.props;
-
-		console.log(newPlace)
 
 		// Initialize map
 		map = L.map('modalMap', {

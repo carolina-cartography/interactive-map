@@ -4,7 +4,7 @@ const Secretary = require('../tools/Secretary')
 const Messages = require('../tools/Messages')
 const Authentication = require('../tools/Authentication')
 
-const Place = require('./../model/Place')
+const { Place, Polygon } = require('./../model/Place')
 
 module.exports = router => {
 
@@ -51,7 +51,8 @@ module.exports = router => {
 			// Validate parameters
 			(token, callback) => {
 				var validations = [
-					Validation.coordinates('Coordinates', req.body.coordinates),
+					Validation.placeType('Type', req.body.type),
+					Validation.coordinates('Coordinates', req.body.coordinates, req.body.type),
 					Validation.string('Map', req.body.map)
 				];
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
@@ -60,7 +61,10 @@ module.exports = router => {
 
 			// Create a new place, add to reply
 			(token, callback) => {
-				Place.create({
+				let model;
+				if (req.body.type === "point") model = Place;
+				else if (req.body.type === "polygon") model = Polygon;
+				model.create({
 					'user': token.user,
 					'map': req.body.map,
 					'coordinates': req.body.coordinates,

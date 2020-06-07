@@ -72,8 +72,6 @@ export default class MapView extends View {
 		// When a marker is created...
 		map.on("pm:create", e => {
 
-			console.log(e)
-
 			// Add 'newPlace' to state, which triggers modal
 			this.setState({ newPlace: e.layer });
 		})
