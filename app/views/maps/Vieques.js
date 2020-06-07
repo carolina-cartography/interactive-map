@@ -46,8 +46,8 @@ export default class MapView extends View {
 		map.setView([18.14, -65.43], 12);
 
 		// Add background layer at front on load
-		L.tileLayer('https://cartocollective.blob.core.windows.net/vieques/1983/{z}/{x}/{y}.png', {
-			tms: true
+		L.tileLayer('https://cartocollective.blob.core.windows.net/vieques/v2009/{z}/{x}/{y}.png', {
+			tms: false
 		}).addTo(map).bringToFront();
 	}
 
