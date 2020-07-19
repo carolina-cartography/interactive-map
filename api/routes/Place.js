@@ -11,6 +11,8 @@ module.exports = router => {
 	router.post('/place.get', (req, res, next) => {
 		req.handled = true;
 
+		let allPlaces = [];
+
 		// Synchronously perform the following tasks...
 		Async.waterfall([
 
@@ -22,15 +24,31 @@ module.exports = router => {
 				callback(Validation.catchErrors(validations))
 			},
 
-			// Find places for map
+			// Find Places for map
 			(callback) => {
 				Place.find({
 					map: req.body.map,
 				}, (err, places) => {
-					Secretary.addToResponse(res, "places", places);
-					callback(err, places)
+					if (places) places.forEach(place => allPlaces.push(place))
+					callback(err)
 				})
 			},
+
+			// Find Polgyons for map
+			(callback) => {
+				Polygon.find({
+					map: req.body.map,
+				}, (err, polygons) => {
+					if (polygons) polygons.forEach(polygon => allPlaces.push(polygon))
+					callback(err)
+				})
+			},
+
+			// Give all places array to secretary
+			(callback) => {
+				Secretary.addToResponse(res, "places", allPlaces)
+				callback()
+			}
 
 		], err => next(err));
 	})
