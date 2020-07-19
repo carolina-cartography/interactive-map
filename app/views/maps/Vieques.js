@@ -61,7 +61,7 @@ export default class MapView extends View {
 			drawCircleMarker: false,
 			drawPolyline: false,
 			drawRectangle: false,
-			drawPolygon: false,
+			drawPolygon: true,
 			drawCircle: false,
 			editMode: false,
 			dragMode: false, 
@@ -73,7 +73,7 @@ export default class MapView extends View {
 		map.on("pm:create", e => {
 
 			// Add 'newPlace' to state, which triggers modal
-			this.setState({ newPlace: e.marker });
+			this.setState({ newPlace: e.layer });
 		})
 	}
 
@@ -85,19 +85,32 @@ export default class MapView extends View {
 		}).then((response) => {
 
 			// For every place returned by database...
-			for (var i in response.places) {
-				var place = response.places[i];
+			for (let i in response.places) {
+				let place = response.places[i];
 
-				// Setup a marker...
-				var marker = L.marker(place.location.coordinates, { place });
-
-				// On marker click, add 'selectedPlace' to state, which triggers modal
-				marker.on('click', (e) => {
+				// Setup a Leaflet object for a place or polygon
+				let leafletPlace
+				if (place.location.type == "Point") {
+					leafletPlace = L.marker(place.location.coordinates, { place })
+				} else if (place.location.type == "Polygon") {
+					// Remove duplicate point at end of polygon arrays, invert lat/lngs from GeoJSON
+					place.location.coordinates.forEach(pointList => {
+						pointList.pop()
+						pointList.forEach((latLng, index) => {
+							let inverted = [latLng[1], latLng[0]]
+							pointList[index] = inverted
+						})
+					}) 
+					leafletPlace = L.polygon(place.location.coordinates, { place })
+				}
+				
+				// On place click, add 'selectedPlace' to state, which triggers modal
+				leafletPlace.on('click', (e) => {
 					this.setState({ selectedPlace: e.target.options.place });
 				})
 
-				// Add marker to map
-				marker.addTo(map);
+				// Add place to map
+				leafletPlace.addTo(map);
 			}
 		}).catch((err) => {});
 	}
@@ -113,11 +126,17 @@ export default class MapView extends View {
 
 			// If the place was saved, re-add with database place object
 			if (place) {
-				var marker = L.marker(newPlace._latlng, { place });
-				marker.on('click', (e) => {
-					this.setState({ selectedPlace: e.target.options.place });
+				var leafletPlace;
+				if (newPlace._latlngs) {
+					leafletPlace = L.polygon(newPlace._latlngs, { place})
+					
+				} else if (newPlace._latlng) {
+					leafletPlace = L.marker(newPlace._latlng, { place })
+				}
+				leafletPlace.on('click', (e) => {
+					this.setState({ selectedPlace: e.target.options.place })
 				})
-				marker.addTo(map)
+				leafletPlace.addTo(map)
 			}
 		}
 		

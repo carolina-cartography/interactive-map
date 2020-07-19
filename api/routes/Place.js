@@ -4,12 +4,14 @@ const Secretary = require('../tools/Secretary')
 const Messages = require('../tools/Messages')
 const Authentication = require('../tools/Authentication')
 
-const Place = require('./../model/Place')
+const { Place, Polygon } = require('./../model/Place')
 
 module.exports = router => {
 
 	router.post('/place.get', (req, res, next) => {
 		req.handled = true;
+
+		let allPlaces = [];
 
 		// Synchronously perform the following tasks...
 		Async.waterfall([
@@ -22,15 +24,31 @@ module.exports = router => {
 				callback(Validation.catchErrors(validations))
 			},
 
-			// Find places for map
+			// Find Places for map
 			(callback) => {
 				Place.find({
 					map: req.body.map,
 				}, (err, places) => {
-					Secretary.addToResponse(res, "places", places);
-					callback(err, places)
+					if (places) places.forEach(place => allPlaces.push(place))
+					callback(err)
 				})
 			},
+
+			// Find Polgyons for map
+			(callback) => {
+				Polygon.find({
+					map: req.body.map,
+				}, (err, polygons) => {
+					if (polygons) polygons.forEach(polygon => allPlaces.push(polygon))
+					callback(err)
+				})
+			},
+
+			// Give all places array to secretary
+			(callback) => {
+				Secretary.addToResponse(res, "places", allPlaces)
+				callback()
+			}
 
 		], err => next(err));
 	})
@@ -51,7 +69,8 @@ module.exports = router => {
 			// Validate parameters
 			(token, callback) => {
 				var validations = [
-					Validation.coordinates('Coordinates', req.body.coordinates),
+					Validation.placeType('Type', req.body.type),
+					Validation.coordinates('Coordinates', req.body.coordinates, req.body.type),
 					Validation.string('Map', req.body.map)
 				];
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
@@ -60,7 +79,10 @@ module.exports = router => {
 
 			// Create a new place, add to reply
 			(token, callback) => {
-				Place.create({
+				let model;
+				if (req.body.type === "point") model = Place;
+				else if (req.body.type === "polygon") model = Polygon;
+				model.create({
 					'user': token.user,
 					'map': req.body.map,
 					'coordinates': req.body.coordinates,

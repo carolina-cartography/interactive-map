@@ -4,32 +4,50 @@ const Database = require('../tools/Database')
 const Dates = require('../tools/Dates')
 const User = require('./User');
 
+const baseSchema = {
+	'user': {
+		'type': String,
+		'index': true,
+		'required': true,
+	},
+	'map': {
+		'type': String,
+		'index': true,
+	},
+	'metadata': {
+		'type': Object,
+		'default': {},
+	},
+}
+
 function PlaceProperties (schema) {
-    schema.add({
-		'user': {
+	let placeSchema = baseSchema;
+	placeSchema.location = {
+		'type': {
 			'type': String,
-			'index': true,
-			'required': true,
+			'default': "Point"
 		},
-		'map': {
+		'coordinates': {
+			'type': [Number],
+			'index': "2dsphere",
+		}
+	};
+    schema.add(placeSchema);
+};
+
+function PolygonProperties (schema) {
+	let polygonSchema = baseSchema;
+	polygonSchema.location = {
+		'type': {
 			'type': String,
-			'index': true,
+			'default': "Polygon"
 		},
-		'location': {
-			'type': {
-				'type': String,
-				'default': "Point"
-			},
-			'coordinates': {
-				'type': [Number],
-				'index': "2dsphere",
-			}
-		},
-		'metadata': {
-			'type': Object,
-			'default': {},
-		},
-    });
+		'coordinates': {
+			'type': [[[Number]]],
+			'index': "2dsphere",
+		}
+	};
+    schema.add(polygonSchema);
 };
 
 function PlaceStaticMethods (schema) {
@@ -158,16 +176,26 @@ function PlaceInstanceMethods (schema) {
 
 };
 
-// Make schema for new place object
+// Make schema for new place and new polygon object
 const placeSchema = new Mongoose.Schema;
+const polygonSchema = new Mongoose.Schema;
 
 // Inherit Object properties and methods
 require('./Object')(placeSchema);
+require('./Object')(polygonSchema);
 
-// Add place properties and methods to schema
+// Setup distinct properties for place and polygon
 PlaceProperties(placeSchema);
+PolygonProperties(polygonSchema);
+
+// Add methods to both schemas
 PlaceStaticMethods(placeSchema);
 PlaceInstanceMethods(placeSchema);
+PlaceStaticMethods(polygonSchema);
+PlaceInstanceMethods(polygonSchema);
 
 // Return new model object
-module.exports = Mongoose.model('Place', placeSchema)
+module.exports = {
+	Place: Mongoose.model('Place', placeSchema),
+	Polygon: Mongoose.model('Polygon', polygonSchema)
+}

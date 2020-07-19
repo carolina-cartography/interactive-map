@@ -9,7 +9,6 @@ export default class PlaceModal extends React.Component {
 
 	constructor(props) {
 		super(props)
-		console.log(props)
 		this.close = this.close.bind(this)
 		this.formatRequest = this.formatRequest.bind(this)
 		this.onSuccess = this.onSuccess.bind(this)
@@ -42,11 +41,18 @@ export default class PlaceModal extends React.Component {
 		}
 
 		// Add coordinates & map data to request
-		formattedRequest.coordinates = [
-			newPlace._latlng.lat,
-			newPlace._latlng.lng
-		];
-
+		if (newPlace._latlng) {
+			formattedRequest.type = "point"
+			formattedRequest.coordinates = [
+				newPlace._latlng.lat,
+				newPlace._latlng.lng
+			];
+		} else if (newPlace._latlngs) {
+			formattedRequest.type = "polygon"
+			let geojson = newPlace.toGeoJSON()
+			formattedRequest.coordinates = geojson.geometry.coordinates;
+		}
+		
 		return formattedRequest
 	}
 
@@ -63,18 +69,28 @@ export default class PlaceModal extends React.Component {
 		});
 
 		// Get new place or saved place coordinates
-		let coordinates;
+		let pointCoordinates, polygonCoordinates
 		if (newPlace) {
-			coordinates = [newPlace._latlng.lat, newPlace._latlng.lng]
+			if (newPlace._latlng) {
+				pointCoordinates = newPlace._latlng
+			} else if (newPlace._latlngs) {
+				polygonCoordinates = newPlace._latlngs
+			}
 		} else if (place) {
-			coordinates = place.location.coordinates;
+			if (place.location.type == "Point") {
+				pointCoordinates = place.location.coordinates
+			} else if (place.location.type == "Polygon") {
+				polygonCoordinates = place.location.coordinates
+			}
 		}
 
-		// Add place to modal map
-		L.marker(coordinates).addTo(map)
-
-		// Position map
-		map.setView(coordinates, 15);
+		if (pointCoordinates) {
+			let point = L.marker(pointCoordinates).addTo(map)
+			map.setView(point.getLatLng(), 15);
+		} else if (polygonCoordinates) {
+			let polygon = L.polygon(polygonCoordinates).addTo(map)
+			map.fitBounds(polygon.getBounds())
+		}
 
 		// Add background layer at front on load
 		L.tileLayer('https://cartocollective.blob.core.windows.net/vieques/1983/{z}/{x}/{y}.png', {

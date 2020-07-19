@@ -87,9 +87,23 @@ function isInvalidSort (input) {
 	return Messages.fieldErrors.sortKey;
 };
 
-function isInvalidCoordinates (input) {
+function isInvalidPointCoordinates (input) {
 	for (var i in input) {
 		if (isNaN(input[i])) return Messages.fieldErrors.isInvalid;
+	}
+}
+
+function isInvalidPolygonCoordinates (input) {
+	// Come back to
+}
+
+function isInvalidPlaceType (input) {
+	switch(input) {
+		case "point":
+		case "polygon":
+			return;
+		default:
+			return Messages.fieldErrors.invalidPlaceType;
 	}
 }
 
@@ -148,12 +162,21 @@ module.exports.sort = function (name, input) {
 	], name);
 };
 
-module.exports.coordinates = function (name, input) {
-	return getNamedErrorFromArray([
-		isInvalidArray(input),
-		isInvalidCoordinates(input),
-	], name);
+module.exports.coordinates = function (name, input, type) {
+	let validations = [
+		isInvalidArray(input)
+	];
+	if (type === "point") validations.push(isInvalidPointCoordinates(input))
+	else if (type === "polygon") validations.push(isInvalidPolygonCoordinates(input))
+	return getNamedErrorFromArray(validations, name);
 };
+
+module.exports.placeType = function (name, input) {
+	return getNamedErrorFromArray([
+		isInvalidString(input),
+		isInvalidPlaceType(input),
+	], name);
+}
 
 module.exports.metadata = function (name, input) {
 	return; // Don't validate for now

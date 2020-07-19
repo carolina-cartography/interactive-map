@@ -10,9 +10,7 @@ Interactive Map is setup using the popular MERN stack: a NodeJS/Express backend,
 Interactive Map relies on the following data structures:
 - *User*: User objects help organize who is adding places to a map. To prevent abuse, only users can add places to a map. Users can register with an email address and password.
 - *Place*: A Place is a point on a map. It is owned by a User. Only the User or a map administrator can edit or delete a place once it has been created. A place has a title, description and other metadat.
-
-Coming soon:
-* *Shape*: A Shape is an area on a Map. It has the same properties as a Place.
+- *Polygon*: A Polygon is an area on a Map. It has the same properties as a Place.
 
 ## Basic Introduction
 
