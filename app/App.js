@@ -12,6 +12,7 @@ import SettingsView from './views/SettingsView'
 
 // Maps
 import Vieques from './views/maps/Vieques'
+import MississippiStory from './views/maps/MississippiStory'
 
 // Create history
 const history = createBrowserHistory();
@@ -27,6 +28,7 @@ export default class App extends React.Component{
 						<Route path="/signup" render={props => <SignupView inside={false} {...props} />}></Route>
 						<Route path="/maps" render={props => <MapsView {...props} />}></Route>
 						<Route path="/map/vieques" render={props => <Vieques {...props} />}></Route>
+						<Route path="/map/mississippi" render={props => <MississippiStory {...props} />}></Route>
 						<Route path="/settings" render={props => <SettingsView inside={true} {...props} />}></Route>
 						<Route path="*"><Redirect to={LANDING} /></Route>
 					</Switch>

@@ -12,7 +12,8 @@ export default class MapsView extends View {
 		return (
 			<div className="view container">
 				<h1>{"Maps"}</h1>
-				<Link to="/map/vieques">Vieques</Link>
+				<Link to="/map/vieques">Vieques</Link><br />
+				<Link to="/map/mississippi">Mississippi Story</Link>
 			</div>
 		);
   	}
