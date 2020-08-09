@@ -2,6 +2,7 @@ const Mongoose = require('mongoose');
 const Async = require('async');
 const Database = require('./../tools/Database');
 const Dates = require('./../tools/Dates');
+const Authentication = require('./../tools/Authentication');
 
 // User Properties: configures properties for database object
 function UserProperties (schema) {
@@ -84,16 +85,7 @@ function UserInstanceMethods (schema) {
 
 	schema.methods.format = function(callback) {
 		let thisUser = this.toObject()
-
-		// Mark user as admin if relevant
-		let admins = process.env.admins
-		if (admins !== undefined) {
-			adminEmails = admins.split(",")
-			if (adminEmails.includes(thisUser.email)) {
-				thisUser.admin = true
-			}
-		}
-
+		thisUser.admin = Authentication.isAdminEmail(thisUser.email)
 		callback(null, thisUser)
 	}
 

@@ -71,7 +71,7 @@ export default class MapView extends View {
 
 	render() {
 		return (
-			<div className="tour-container">
+			<div className="map-view">
 				<div id="leaflet"></div>
 				<audio id="audioPlayer" controls>
 					<source src="/assets/MississippiTourDemo.mp3" type="audio/mpeg" />

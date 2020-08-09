@@ -24,7 +24,7 @@ function MapProperties (schema) {
 		'description': {
 			'type': String,
 		},
-		'coordindates': {
+		'coordinates': {
 			'type': [Number],
 			'required': true,
 		},

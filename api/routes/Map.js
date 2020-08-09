@@ -1,8 +1,10 @@
 const Async = require('async')
+const Authentication = require('./../tools/Authentication')
 const Validation = require('./../tools/Validation')
 const Secretary = require('./../tools/Secretary')
 const Messages = require('./../tools/Messages')
 const Map = require('./../model/Map')
+
 
 module.exports = router => {
 
@@ -52,34 +54,50 @@ module.exports = router => {
 	router.post('/map.create', (req, res, next) => {
 		req.handled = true;
 
-		// Validate all fields
-		var validations = [
-			Validation.string('ID', req.body.id),
-			Validation.string('Name', req.body.name),
-			Validation.string('Description', req.body.description),
-			Validation.coordinates('Coordinates', req.body.coordinates),
-			Validation.number('Zoom', req.body.zoom),
-			Validation.string('Tiles URL', req.body.tiles)
-		];
-		var err = Validation.catchErrors(validations);
-		if (err) return next(err);
+		// Setup defaults
+		if (!req.body.tiles) {
+			req.body.tiles = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+		}
 
 		// Synchronously perform the following tasks...
 		Async.waterfall([
 
-			// Check if ID is unique
+			// Authenticate user
 			callback => {
+				Authentication.authenticateAdminUser(req, function (err, token) {
+					callback(err, token);
+				});
+			},
+
+			// Validate parameters
+			(token, callback) => {
+				var validations = [
+					Validation.string('ID', req.body.id),
+					Validation.string('Name', req.body.name),
+					Validation.string('Description', req.body.description),
+					Validation.coordinates('Coordinates', req.body.coordinates),
+					Validation.number('Zoom', req.body.zoom),
+					Validation.string('Tiles URL', req.body.tiles)
+				];
+				callback(Validation.catchErrors(validations), token)
+			},
+
+			// Check if ID is unique
+			(token, callback) => {
 				Map.findOne({
 					'id': req.body.id,
 				}, (err, map) => {
 					if (map) callback(Secretary.conflictError(Messages.conflictErrors.idAlreadyUsed));
-					else callback(err);
+					else callback(err, token);
 				});
 			},
 
 			// Create a new map, add to reply
-			callback => {
-				Map.create(req.body, (err, map) => {
+			(token, callback) => {
+				Map.create({
+					...req.body,
+					'user': token.user,
+				}, (err, map) => {
 					if (map) Secretary.addToResponse(res, "map", map)
 					callback(err, map);
 				});

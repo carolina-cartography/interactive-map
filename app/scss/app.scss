@@ -27,10 +27,12 @@ body {font-family: 'Work Sans', sans-serif;}
 // Form Styles
 .form {
 	input, textarea {
-		display:block; width:100%; border:1px solid #ccc; 
+		display:block; width:100%; max-width:480px; border:1px solid #ccc; 
 		font-size:16px; padding:4px 6px; line-height:1.4;
 	}
+	input[type="submit"] {margin-top:25px; max-width:100px;}
 	.field {
+		margin-top:10px;
 		.title {font-size:15px; margin-bottom:4px;}
 	}
 }
@@ -63,15 +65,20 @@ header {
 }
 
 .view {
-	margin-top:30px;
+	margin-top:30px; padding-bottom:30px;
 	h1 {margin-bottom:30px;}
 }
-
-#leaflet, .tour-container {width:100%; height:calc(100vh - 60px); background:black; z-index:10;}
-
-.tour-container {
-	position:relative;
+.map-item {
+	border-top:1px solid #ddd; padding:20px 0px;
+}
+.map-view {
+	position:relative; width:100%; height:calc(100vh - 60px);
+	#leaflet {width:100%; height:100%; background:black; z-index:10;}
 	audio {position:absolute; bottom:30px; left:30px; z-index:30;}
+}
+.map-edit-container {
+	margin-bottom:30px;
+	#leaflet {margin-top:10px; width:100%; height:600px; background:black; z-index:10;}
 }
 
 .modal-container {

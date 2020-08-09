@@ -12,6 +12,7 @@ module.exports = {
 		'missingToken': "Missing authorization token",
 		'unauthorized': "Unauthorized",
 		'noAccess': "Unauthorized to access object",
+		'notAdmin': "Only administrators can perform this action",
 	},
 	'typeErrors': {
 		'string': " is not a string",

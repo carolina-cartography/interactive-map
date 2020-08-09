@@ -95,7 +95,7 @@ export default class MapView extends View {
 	loadPlaces() {
 		// Get this map's places from the database
 		Requests.do('place.get', {
-			map: mapMetadata.id,
+			map: this.state.map.id,
 		}).then((response) => {
 
 			// For every place returned by database...
@@ -175,9 +175,11 @@ export default class MapView extends View {
 		}
 
 		return (
-			<React.Fragment>
-				{loading && "Loading..."}
-				{error && `Error: ${error}`}
+			<div className="map-view">
+				{loading || error && <div className="status">
+					{loading && "Loading..."}
+					{error && `Error: ${error}`}
+				</div>}
 				{map && <div id="leaflet"></div>}
 				{showModal && <PlaceModal
 					mapID={this.state.map.id}
@@ -185,7 +187,7 @@ export default class MapView extends View {
 					newPlace={newPlace}
 					close={this.closeModal}
 				/>}
-			</React.Fragment>
+			</div>
 		);
   	}
 }
