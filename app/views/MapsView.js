@@ -16,7 +16,7 @@ export default class MapsView extends View {
 
 	componentDidMount() {
 		this.setState({ loading: true })
-		Requests.do('place.list', {})
+		Requests.do('map.list', {})
 			.then((response) => {
 				this.setState({ loading: false, maps: response.maps })
 			})

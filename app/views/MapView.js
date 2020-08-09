@@ -10,7 +10,6 @@ import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 
 // Initialize map outside of any function
-var mapMetadata;
 var map;
 
 export default class MapView extends View {
@@ -59,12 +58,12 @@ export default class MapView extends View {
 		});
 
 		// Position map
-		map.setView(mapMetadata.coordinates, 12);
+		map.setView(this.state.map.coordinates, this.state.map.zoom);
 
-		// Add background layer at front on load
-		L.tileLayer('https://cartocollective.blob.core.windows.net/vieques/v2009/{z}/{x}/{y}.png', {
+		// Add tiles
+		L.tileLayer(this.state.map.tiles, {
 			tms: false
-		}).addTo(map).bringToFront();
+		}).addTo(map);
 	}
 
 	setupAuthenticatedMap() {
