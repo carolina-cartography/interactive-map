@@ -7,14 +7,16 @@ export default class Header extends React.Component{
 	
 	state = {
 		path: location.pathname,
-		loggedIn: Authentication.isAuthenticated()
+		loggedIn: Authentication.isAuthenticated(),
+		isAdmin: Authentication.isAdmin()
 	}
 
 	componentDidMount() {
 		this.props.history.listen((location) => {
 			this.setState({
 				path: location.pathname,
-				loggedIn: Authentication.isAuthenticated() 
+				loggedIn: Authentication.isAuthenticated(),
+				isAdmin: Authentication.isAdmin(),
 			})
 		})
 	}
@@ -24,7 +26,7 @@ export default class Header extends React.Component{
 	}
 
 	render() {
-		const { path, loggedIn } = this.state
+		const { path, loggedIn, isAdmin, } = this.state
 		return (
 			<header className={loggedIn ? "inside" : null}>
 				<div className={path.includes('/map/') ? "container map-container" : "container"}>
@@ -35,6 +37,7 @@ export default class Header extends React.Component{
 						</div>
 						{loggedIn 
 							? <div className="menu user_menu">
+								{isAdmin && <NavLink to="/new">{"New Map"}</NavLink>}
 								<NavLink to="/settings">{"Settings"}</NavLink>
 								<NavLink className="logout" to={LANDING} onClick={this.logout}>{"Logout"}</NavLink>
 							</div> 

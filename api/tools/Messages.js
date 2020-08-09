@@ -4,6 +4,7 @@ module.exports = {
 		'serverError': 500,
 		'requestError': 400,
 		'unauthorizedError': 401,
+		'notFoundError': 404,
 		'conflictError': 409
 	},
 	'authErrors': {
@@ -11,6 +12,7 @@ module.exports = {
 		'missingToken': "Missing authorization token",
 		'unauthorized': "Unauthorized",
 		'noAccess': "Unauthorized to access object",
+		'notAdmin': "Only administrators can perform this action",
 	},
 	'typeErrors': {
 		'string': " is not a string",
@@ -29,6 +31,7 @@ module.exports = {
 	'conflictErrors': {
 		'objectNotFound': "Object not found in the database",
 		'emailAlreadyUsed': "An account with this email already exists",
+		'idAlreadyUsed': "A map with this ID already exists",
 		'emailNotFound': "Email not recognized",
 		'passwordIncorrect': "Incorrect password",
 	}

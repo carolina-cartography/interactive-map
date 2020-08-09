@@ -31,6 +31,7 @@ module.exports = {
 
 		// Import individual route collections
 		require('./routes/User')(router)
+		require('./routes/Map')(router)
 		require('./routes/Place')(router)
 
 		// Set root route, configure router

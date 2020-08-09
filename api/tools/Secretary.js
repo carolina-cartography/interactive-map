@@ -26,6 +26,9 @@ module.exports = {
 	requestError: message => {
 		return createError(Messages.codes.requestError, message);
 	},
+	notFoundError: message => {
+		return createError(Messages.codes.notFoundError, message);
+	},
 	conflictError: message => {
 		return createError(Messages.codes.conflictError, message);
 	},

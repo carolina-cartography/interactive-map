@@ -18,6 +18,13 @@ export default {
 		return Storage.get('token') || false
 	},
 
+	// Returns admin boolean
+	isAdmin: () => {
+		let user = Storage.get('user')
+		if (user && user.admin) return true;
+		return false;
+	},
+
 	// Returns authentication token
 	getToken: () => {
 		return Storage.get('token')

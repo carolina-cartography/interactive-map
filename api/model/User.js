@@ -2,6 +2,7 @@ const Mongoose = require('mongoose');
 const Async = require('async');
 const Database = require('./../tools/Database');
 const Dates = require('./../tools/Dates');
+const Authentication = require('./../tools/Authentication');
 
 // User Properties: configures properties for database object
 function UserProperties (schema) {
@@ -81,6 +82,12 @@ function UserStaticMethods (schema) {
 
 // User Instance Methods: attaches functionality related to existing instances of the object
 function UserInstanceMethods (schema) {
+
+	schema.methods.format = function(callback) {
+		let thisUser = this.toObject()
+		thisUser.admin = Authentication.isAdminEmail(thisUser.email)
+		callback(null, thisUser)
+	}
 
 	// Updates an existing user
 	schema.methods.edit = function ({name}, callback) {
