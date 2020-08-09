@@ -4,6 +4,7 @@ module.exports = {
 		'serverError': 500,
 		'requestError': 400,
 		'unauthorizedError': 401,
+		'notFoundError': 404,
 		'conflictError': 409
 	},
 	'authErrors': {
@@ -29,6 +30,7 @@ module.exports = {
 	'conflictErrors': {
 		'objectNotFound': "Object not found in the database",
 		'emailAlreadyUsed': "An account with this email already exists",
+		'idAlreadyUsed': "A map with this ID already exists",
 		'emailNotFound': "Email not recognized",
 		'passwordIncorrect': "Incorrect password",
 	}

@@ -82,6 +82,21 @@ function UserStaticMethods (schema) {
 // User Instance Methods: attaches functionality related to existing instances of the object
 function UserInstanceMethods (schema) {
 
+	schema.methods.format = function(callback) {
+		let thisUser = this.toObject()
+
+		// Mark user as admin if relevant
+		let admins = process.env.admins
+		if (admins !== undefined) {
+			adminEmails = admins.split(",")
+			if (adminEmails.includes(thisUser.email)) {
+				thisUser.admin = true
+			}
+		}
+
+		callback(null, thisUser)
+	}
+
 	// Updates an existing user
 	schema.methods.edit = function ({name}, callback) {
 
