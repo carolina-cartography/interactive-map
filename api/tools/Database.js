@@ -37,6 +37,10 @@ module.exports = {
 			callback(err, object);
 		});
 	},
+
+	delete: ({model, guid}, callback) => {
+		model.deleteOne({ guid }, callback);
+	},
 }
 
 

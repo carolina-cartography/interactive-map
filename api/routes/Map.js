@@ -109,21 +109,64 @@ module.exports = router => {
 	router.post('/map.edit', (req, res, next) => {
 		req.handled = true;
 
-		// Validate all fields
-		var validations = [
-			Validation.string('GUID', req.body.guid)
-		];
-		if (req.body.id) validations.push(Validation.string('ID', req.body.id))
-		if (req.body.name) validations.push(Validation.string('Name', req.body.name))
-		if (req.body.description) validations.push(Validation.string('Description', req.body.description))
-		if (req.body.coordinates) validations.push(Validation.coordinates('Coordinates', req.body.coordinates))
-		if (req.body.zoom) validations.push(Validation.number('Zoom', req.body.zoom))
-		if (req.body.tiles) validations.push(Validation.string('Tiles URL', req.body.tiles))
-		var err = Validation.catchErrors(validations);
-		if (err) return next(err);
+		// Synchronously perform the following tasks...
+		Async.waterfall([
+
+			// Authenticate user
+			callback => {
+				Authentication.authenticateAdminUser(req, function (err, token) {
+					callback(err, token);
+				});
+			},
+
+			(token, callback) => {
+				var validations = [
+					Validation.string('GUID', req.body.guid)
+				];
+				if (req.body.id) validations.push(Validation.string('ID', req.body.id))
+				if (req.body.name) validations.push(Validation.string('Name', req.body.name))
+				if (req.body.description) validations.push(Validation.string('Description', req.body.description))
+				if (req.body.coordinates) validations.push(Validation.coordinates('Coordinates', req.body.coordinates))
+				if (req.body.zoom) validations.push(Validation.number('Zoom', req.body.zoom))
+				if (req.body.tiles) validations.push(Validation.string('Tiles URL', req.body.tiles))
+				callback(Validation.catchErrors(validations), token);
+			},
+
+			// Find map with GUID
+			(token, callback) => {
+				Map.findOne({
+					'guid': req.body.guid,
+				}, (err, map) => {
+					if (!map) callback(Secretary.conflictError(Messages.conflictErrors.objectNotFound));
+					else callback(err, token, map);
+				});
+			},
+
+			// Edit map, add to reply
+			(token, map, callback) => {
+				let editParams = req.body;
+				editParams.user = token.user;
+				map.edit(req.body, (err, map) => {
+					if (map) Secretary.addToResponse(res, "map", map)
+					callback(err);
+				});
+			},
+
+		], err => next(err));
+	})
+
+	router.post('/map.delete', (req, res, next) => {
+		req.handled = true;
 
 		// Synchronously perform the following tasks...
 		Async.waterfall([
+
+			// Authenticate user
+			callback => {
+				Authentication.authenticateAdminUser(req, function (err, token) {
+					callback(err);
+				});
+			},
 
 			// Find map with GUID
 			callback => {
@@ -135,11 +178,10 @@ module.exports = router => {
 				});
 			},
 
-			// Edit map, add to reply
+			// Delete map
 			(map, callback) => {
-				map.edit(req.body, (err, map) => {
-					if (map) Secretary.addToResponse(res, "map", map)
-					callback(err, map);
+				map.delete((err) => {
+					callback(err);
 				});
 			},
 

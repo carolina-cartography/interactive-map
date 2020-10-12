@@ -80,6 +80,12 @@ header {
 	margin-bottom:30px;
 	#leaflet {margin-top:10px; width:100%; height:600px; background:black; z-index:10;}
 }
+.admin-panel {
+	position:absolute; top:0px; right:0px; padding:10px 0px; z-index:10; max-width:240px;
+	background:black; color:white; text-align:right;
+	span {display:inline-block; margin:0px 14px; cursor:pointer;}
+	.admin-error {padding:10px 10px 0px;}
+}
 
 .modal-container {
 	position:fixed; left:0px; top:0px; width:100%; height:100%; z-index:20;

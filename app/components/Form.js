@@ -21,6 +21,15 @@ class Form extends React.Component {
 		fieldErrors: {}
 	}
 
+	componentDidMount() {
+		let newState = {};
+		const { fields } = this.props;
+		Object.entries(fields).forEach(([key, field]) => {
+			newState[key] = field.value
+		})
+		this.setState(newState)
+	}
+
 	getHandler = (key, field) => (event) => {
 		event.preventDefault();
 		const state = this.state;
@@ -81,7 +90,8 @@ class Form extends React.Component {
 			<form className={`form ${css}`} onSubmit={this.handleSubmit}>
 				{title && <div className="title">{title}</div>}
 				{Object.entries(fields).map(([key, field]) => {
-					return <Field key={key} {...field} error={fieldErrors[key]} handler={this.getHandler(key, field)} />
+					return <Field key={key} {...field} value={this.state[key]} 
+						error={fieldErrors[key]} handler={this.getHandler(key, field)} />
 				})}
 				{formError && <div className="formError">{formError}</div>}
 				<input type="submit" value="Submit" />

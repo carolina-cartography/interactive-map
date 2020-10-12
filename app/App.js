@@ -25,8 +25,8 @@ export default class App extends React.Component{
 						<Route path="/login" render={props => <LoginView inside={false} {...props} />}></Route>
 						<Route path="/signup" render={props => <SignupView inside={false} {...props} />}></Route>
 						<Route path="/maps" render={props => <MapsView {...props} />}></Route>
-						<Route path="/map/:id" render={props => <MapView {...props} />}></Route>
 						<Route path="/map/:id/edit" render={props => <MapEditView {...props} />}></Route>
+						<Route path="/map/:id" render={props => <MapView {...props} />}></Route>
 						<Route path="/new" render={props => <MapEditView {...props} />}></Route>
 						<Route path="/settings" render={props => <SettingsView inside={true} {...props} />}></Route>
 						<Route path="*"><Redirect to={LANDING} /></Route>

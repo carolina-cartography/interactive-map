@@ -21,13 +21,19 @@ export default class MapView extends View {
 		this.setupMap = this.setupMap.bind(this)
 		this.setupAuthenticatedMap = this.setupAuthenticatedMap.bind(this)
 		this.loadPlaces = this.loadPlaces.bind(this)
+		this.delete = this.delete.bind(this)
+		this.edit = this.edit.bind(this)
 	}
 
 	state = {
+		isAdmin: Authentication.isAdmin(),
 		loading: false,
 		map: null,
 		selectedPlace: null,
 		newPlace: null,
+		error: null,
+		deleting: false,
+		deleteError: null,
 	}
 
 	componentDidMount() {
@@ -165,8 +171,28 @@ export default class MapView extends View {
 		this.setState({ selectedPlace: null, newPlace: null });
 	}
 
+	delete() {
+		const { map } = this.state;
+		this.setState({ deleting: true });
+		Requests.do("map.delete", {
+			guid: map.guid,
+		}).then(response => {
+			this.props.history.push("/maps")
+		}).catch(response => {
+			this.setState({ deleting: false, deleteError: response.message });
+		})
+	}
+
+	edit() {
+		const { map } = this.state;
+		this.props.history.push(`/map/${map.id}/edit`);
+	}
+
 	render() {
-		const { map, loading, error, selectedPlace, newPlace } = this.state;
+		const { 
+			isAdmin, map, loading, error, selectedPlace, newPlace,
+			deleting, deleteError,
+		} = this.state;
 
 		// Determine whether to show modal
 		let showModal = false;
@@ -181,6 +207,17 @@ export default class MapView extends View {
 					{error && `Error: ${error}`}
 				</div>}
 				{map && <div id="leaflet"></div>}
+				{map && isAdmin && <div className="admin-panel">
+					<span onClick={this.delete}>
+						{deleting
+							? "Deleting..."
+							: "Delete"}
+					</span>
+					<span onClick={this.edit}>{"Edit"}</span>
+					{deleteError && <div className="admin-error">
+						{`Delete failed: ${deleteError}`}
+					</div>}
+				</div>}
 				{showModal && <PlaceModal
 					mapID={this.state.map.id}
 					place={selectedPlace}

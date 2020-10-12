@@ -115,7 +115,7 @@ function MapInstanceMethods (schema) {
 		};
 		if (id) set.id = id;
 		if (name) set.name = name;
-		if (description) set.descirption = description;
+		if (description) set.description = description;
 		if (coordinates) set.coordinates = coordinates;
 		if (zoom) set.zoom = zoom;
 		if (tiles) set.tiles = tiles;
@@ -131,6 +131,15 @@ function MapInstanceMethods (schema) {
 		}, function (err, map) {
 			callback(err, map);
 		});
+	};
+
+	// Deletes an existing map
+	schema.methods.delete = function (callback) {
+		var Map = this;
+		Database.delete({
+			'model': Map.constructor,
+			'guid': this.guid,
+		}, callback)
 	};
 
 };
