@@ -101,6 +101,7 @@ function isInvalidPlaceType (input) {
 	switch(input) {
 		case "point":
 		case "polygon":
+		case "circle":
 			return;
 		default:
 			return Messages.fieldErrors.invalidPlaceType;

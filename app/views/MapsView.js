@@ -33,7 +33,7 @@ export default class MapsView extends View {
 				{loading && "Loading..."}
 				{error && `Error: ${error}`}
 				{maps.length < 1 && "No maps"}
-				{maps.map((map) => <Link to={`/map/${map.id}`}>
+				{maps.map((map) => <Link key={map.id} to={`/map/${map.id}`}>
 					<div className="map-item">
 						<h2>{map.name}</h2>
 						{map.description && <p>{map.description}</p>}

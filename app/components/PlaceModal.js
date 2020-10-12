@@ -41,7 +41,14 @@ export default class PlaceModal extends React.Component {
 		}
 
 		// Add coordinates & map data to request
-		if (newPlace._latlng) {
+		if (newPlace._mRadius) {
+			formattedRequest.type = "circle"
+			formattedRequest.coordinates = [
+				newPlace._latlng.lat,
+				newPlace._latlng.lng
+			];
+			formattedRequest.radius = newPlace._mRadius
+		} else if (newPlace._latlng) {
 			formattedRequest.type = "point"
 			formattedRequest.coordinates = [
 				newPlace._latlng.lat,
@@ -69,22 +76,33 @@ export default class PlaceModal extends React.Component {
 		});
 
 		// Get new place or saved place coordinates
-		let pointCoordinates, polygonCoordinates
+		let pointCoordinates, polygonCoordinates, circleRadius
 		if (newPlace) {
-			if (newPlace._latlng) {
+			if (newPlace._latlng && newPlace._mRadius) {
+				pointCoordinates = newPlace._latlng
+				circleRadius = newPlace._mRadius
+			} else if (newPlace._latlng) {
 				pointCoordinates = newPlace._latlng
 			} else if (newPlace._latlngs) {
 				polygonCoordinates = newPlace._latlngs
 			}
 		} else if (place) {
-			if (place.location.type == "Point") {
+			if (place.radius) {
+				pointCoordinates = place.location.coordinates
+				circleRadius = place.radius
+			} else if (place.location.type == "Point") {
 				pointCoordinates = place.location.coordinates
 			} else if (place.location.type == "Polygon") {
 				polygonCoordinates = place.location.coordinates
 			}
 		}
 
-		if (pointCoordinates) {
+		if (circleRadius) {
+			let circle = L.circle(pointCoordinates, { radius: circleRadius }).addTo(map)
+			// Note: circle.getBounds is throwing an exception here
+			// Come back and fix this later
+			map.setView(circle.getLatLng(), 10)
+		} else if (pointCoordinates) {
 			let point = L.marker(pointCoordinates).addTo(map)
 			map.setView(point.getLatLng(), 15);
 		} else if (polygonCoordinates) {
@@ -93,8 +111,8 @@ export default class PlaceModal extends React.Component {
 		}
 
 		// Add background layer at front on load
-		L.tileLayer('https://cartocollective.blob.core.windows.net/vieques/1983/{z}/{x}/{y}.png', {
-			tms: true
+		L.tileLayer(this.props.tiles, {
+			tms: this.props.tmsTiles,
 		}).addTo(map).bringToFront();
 	}
 

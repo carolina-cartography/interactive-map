@@ -31,12 +31,12 @@ class Form extends React.Component {
 	}
 
 	getHandler = (key, field) => (event) => {
-		event.preventDefault();
 		const state = this.state;
 		const { fields } = this.props;
 		
 		// Add latest value
-		state[key] = event.target.value;
+		if (event.target.type === 'checkbox') state[key] = event.target.checked;
+		else state[key] = event.target.value;
 
 		// Revalidate fields if current field is errored
 		if (state.fieldErrors[key]) 

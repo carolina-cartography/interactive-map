@@ -4,7 +4,7 @@ const Validation = require('./../tools/Validation')
 const Secretary = require('./../tools/Secretary')
 const Messages = require('./../tools/Messages')
 const Map = require('./../model/Map')
-
+const { Circle, Polygon, Place } = require('../model/Place')
 
 module.exports = router => {
 
@@ -176,6 +176,27 @@ module.exports = router => {
 					if (!map) callback(Secretary.conflictError(Messages.conflictErrors.objectNotFound));
 					else callback(err, map);
 				});
+			},
+
+			// Delete all places for map
+			(map, callback) => {
+				Place.deleteMany({ map: map.id }, (err) => {
+					callback(err, map)
+				})
+			},
+
+			// Delete all polygons for map
+			(map, callback) => {
+				Polygon.deleteMany({ map: map.id }, (err) => {
+					callback(err, map)
+				})
+			},
+
+			// Delete all circles for map
+			(map, callback) => {
+				Circle.deleteMany({ map: map.id }, (err) => {
+					callback(err, map)
+				})
 			},
 
 			// Delete map

@@ -23,6 +23,7 @@ export default class MapView extends View {
 		this.loadPlaces = this.loadPlaces.bind(this)
 		this.delete = this.delete.bind(this)
 		this.edit = this.edit.bind(this)
+		this.addPlaceToMap = this.addPlaceToMap.bind(this)
 	}
 
 	state = {
@@ -68,7 +69,7 @@ export default class MapView extends View {
 
 		// Add tiles
 		L.tileLayer(this.state.map.tiles, {
-			tms: false
+			tms: this.state.map.tmsTiles
 		}).addTo(map);
 	}
 
@@ -83,7 +84,7 @@ export default class MapView extends View {
 			drawPolyline: false,
 			drawRectangle: false,
 			drawPolygon: true,
-			drawCircle: false,
+			drawCircle: true,
 			editMode: false,
 			dragMode: false, 
 			cutPolygon: false,
@@ -98,6 +99,37 @@ export default class MapView extends View {
 		})
 	}
 
+	addPlaceToMap(place) {
+
+		console.log(place)
+
+		// Setup a Leaflet object for a place or polygon
+		let leafletPlace
+		if (place.radius) {
+			leafletPlace = L.circle(place.location.coordinates, { radius: place.radius, place })
+		} else if (place.location.type == "Point") {
+			leafletPlace = L.marker(place.location.coordinates, { place })
+		} else if (place.location.type == "Polygon") {
+			// Remove duplicate point at end of polygon arrays, invert lat/lngs from GeoJSON
+			place.location.coordinates.forEach(pointList => {
+				pointList.pop()
+				pointList.forEach((latLng, index) => {
+					let inverted = [latLng[1], latLng[0]]
+					pointList[index] = inverted
+				})
+			}) 
+			leafletPlace = L.polygon(place.location.coordinates, { place })
+		}
+		
+		// On place click, add 'selectedPlace' to state, which triggers modal
+		leafletPlace.on('click', (e) => {
+			this.setState({ selectedPlace: e.target.options.place });
+		})
+
+		// Add place to map
+		leafletPlace.addTo(map);
+	}
+
 	loadPlaces() {
 		// Get this map's places from the database
 		Requests.do('place.get', {
@@ -106,31 +138,7 @@ export default class MapView extends View {
 
 			// For every place returned by database...
 			for (let i in response.places) {
-				let place = response.places[i];
-
-				// Setup a Leaflet object for a place or polygon
-				let leafletPlace
-				if (place.location.type == "Point") {
-					leafletPlace = L.marker(place.location.coordinates, { place })
-				} else if (place.location.type == "Polygon") {
-					// Remove duplicate point at end of polygon arrays, invert lat/lngs from GeoJSON
-					place.location.coordinates.forEach(pointList => {
-						pointList.pop()
-						pointList.forEach((latLng, index) => {
-							let inverted = [latLng[1], latLng[0]]
-							pointList[index] = inverted
-						})
-					}) 
-					leafletPlace = L.polygon(place.location.coordinates, { place })
-				}
-				
-				// On place click, add 'selectedPlace' to state, which triggers modal
-				leafletPlace.on('click', (e) => {
-					this.setState({ selectedPlace: e.target.options.place });
-				})
-
-				// Add place to map
-				leafletPlace.addTo(map);
+				this.addPlaceToMap(response.places[i])				
 			}
 		}).catch((err) => {});
 	}
@@ -145,26 +153,7 @@ export default class MapView extends View {
 			map.removeLayer(newPlace)
 
 			// If the place was saved, re-add with database place object
-			if (place) {
-				let leafletPlace
-				if (place.location.type == "Point") {
-					leafletPlace = L.marker(place.location.coordinates, { place })
-				} else if (place.location.type == "Polygon") {
-					// Remove duplicate point at end of polygon arrays, invert lat/lngs from GeoJSON
-					place.location.coordinates.forEach(pointList => {
-						pointList.pop()
-						pointList.forEach((latLng, index) => {
-							let inverted = [latLng[1], latLng[0]]
-							pointList[index] = inverted
-						})
-					}) 
-					leafletPlace = L.polygon(place.location.coordinates, { place })
-				}
-				leafletPlace.on('click', (e) => {
-					this.setState({ selectedPlace: e.target.options.place })
-				})
-				leafletPlace.addTo(map)
-			}
+			if (place) this.addPlaceToMap(place)
 		}
 		
 		// Create state
@@ -223,6 +212,8 @@ export default class MapView extends View {
 					place={selectedPlace}
 					newPlace={newPlace}
 					close={this.closeModal}
+					tiles={this.state.map.tiles}
+					tmsTiles={this.state.map.tmsTiles}
 				/>}
 			</div>
 		);

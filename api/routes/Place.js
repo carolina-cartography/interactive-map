@@ -4,7 +4,7 @@ const Secretary = require('../tools/Secretary')
 const Messages = require('../tools/Messages')
 const Authentication = require('../tools/Authentication')
 
-const { Place, Polygon } = require('./../model/Place')
+const { Place, Polygon, Circle } = require('./../model/Place')
 
 module.exports = router => {
 
@@ -44,6 +44,16 @@ module.exports = router => {
 				})
 			},
 
+			// Find Circles for map
+			(callback) => {
+				Circle.find({
+					map: req.body.map,
+				}, (err, circles) => {
+					if (circles) circles.forEach(circle => allPlaces.push(circle))
+					callback(err)
+				})
+			},
+
 			// Give all places array to secretary
 			(callback) => {
 				Secretary.addToResponse(res, "places", allPlaces)
@@ -73,21 +83,29 @@ module.exports = router => {
 					Validation.coordinates('Coordinates', req.body.coordinates, req.body.type),
 					Validation.string('Map', req.body.map)
 				];
+				if (req.body.radius) validations.push(Validation.number('Radius', req.body.radius))
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
 				callback(Validation.catchErrors(validations), token)
 			},
 
 			// Create a new place, add to reply
 			(token, callback) => {
-				let model;
-				if (req.body.type === "point") model = Place;
-				else if (req.body.type === "polygon") model = Polygon;
-				model.create({
+				let options = {
 					'user': token.user,
 					'map': req.body.map,
 					'coordinates': req.body.coordinates,
 					'metadata': req.body.metadata,
-				}, (err, place) => {
+				};
+
+				let model;
+				if (req.body.type === "point") model = Place;
+				else if (req.body.type === "polygon") model = Polygon;
+				else if (req.body.type === "circle") {
+					model = Circle;
+					options.radius = req.body.radius
+				}
+
+				model.create(options, (err, place) => {
 					Secretary.addToResponse(res, "place", place)
 					callback(err);
 				});
@@ -116,6 +134,7 @@ module.exports = router => {
 				];
 				if (req.body.coordinates) validations.push(Validtion.coordinates('Coordinates', req.body.coordinates))
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
+				if (req.body.radius) validations.push(Validation.number('Radius', req.body.radius))
 				callback(Validation.catchErrors(validations), token)
 			},
 
@@ -134,6 +153,7 @@ module.exports = router => {
 			(place, callback) => {
 				place.edit({
 					'coordinates': req.body.coordinates,
+					'radius': req.body.radius,
 					'metadata': req.body.metadata,
 				}, (err, place) => {
 					Secretary.addToResponse(res, "place", place)

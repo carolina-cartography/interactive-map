@@ -26,7 +26,7 @@ module.exports = {
 		'passwordNumber': " is missing a number",
 		'isInvalid': " is invalid",
 		'sortKey': " is not a valid sort key",
-		'invalidPlaceType': " must be 'place' or 'polygon'.",
+		'invalidPlaceType': " must be 'place', 'polygon' or 'circle'.",
 	},
 	'conflictErrors': {
 		'objectNotFound': "Object not found in the database",

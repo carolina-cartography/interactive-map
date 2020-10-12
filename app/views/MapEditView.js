@@ -20,6 +20,7 @@ const fields = {
 		title: "Tiles URL (URL including {z}/{x}/{y})", 
 		placeholder: "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
 	},
+	tmsTiles: { type: 'checkbox', title: 'TMS Tiles' },
 }
 
 export default class MapEditView extends View {

@@ -50,10 +50,28 @@ function PolygonProperties (schema) {
     schema.add(polygonSchema);
 };
 
+function CircleProperties (schema) {
+	let polygonSchema = baseSchema;
+	polygonSchema.location = {
+		'type': {
+			'type': String,
+			'default': "Point"
+		},
+		'coordinates': {
+			'type': [Number],
+			'index': "2dsphere",
+		}
+	};
+	polygonSchema.radius = {
+		'type': Number,
+	};
+    schema.add(polygonSchema);
+};
+
 function PlaceStaticMethods (schema) {
 
 	// Create: creates a new place in the database
-	schema.statics.create = function ({user, map, coordinates, metadata}, callback) {
+	schema.statics.create = function ({user, map, coordinates, metadata, radius}, callback) {
 
 		// Save reference to model
 		var Place = this;
@@ -89,6 +107,7 @@ function PlaceStaticMethods (schema) {
 
 				// Setup database update with optional fields
 				if (metadata) set.metadata = metadata;
+				if (radius) set.radius = radius;
 				
 				// Make database update
 				Database.update({
@@ -127,7 +146,7 @@ function PlaceInstanceMethods (schema) {
 		});
 	};
 
-	schema.methods.edit = function ({coordinates, metadata}, callback) {
+	schema.methods.edit = function ({coordinates, radius, metadata}, callback) {
 
 		// Save reference to model
 		var Place = this;
@@ -145,6 +164,7 @@ function PlaceInstanceMethods (schema) {
 
 		// Setup database update with optional fields
 		if (coordinates) set.location = { coordinates };
+		if (radius) (set.radius) = radius;
 		if (metadata) {
 			for (var key in metadata) {
 				if (metadata[key] === null) unset[`metadata.${key}`] = true;
@@ -179,23 +199,29 @@ function PlaceInstanceMethods (schema) {
 // Make schema for new place and new polygon object
 const placeSchema = new Mongoose.Schema;
 const polygonSchema = new Mongoose.Schema;
+const circleSchema = new Mongoose.Schema;
 
 // Inherit Object properties and methods
 require('./Object')(placeSchema);
 require('./Object')(polygonSchema);
+require('./Object')(circleSchema);
 
 // Setup distinct properties for place and polygon
 PlaceProperties(placeSchema);
 PolygonProperties(polygonSchema);
+CircleProperties(circleSchema);
 
 // Add methods to both schemas
 PlaceStaticMethods(placeSchema);
 PlaceInstanceMethods(placeSchema);
 PlaceStaticMethods(polygonSchema);
 PlaceInstanceMethods(polygonSchema);
+PlaceStaticMethods(circleSchema);
+PlaceInstanceMethods(circleSchema);
 
 // Return new model object
 module.exports = {
 	Place: Mongoose.model('Place', placeSchema),
-	Polygon: Mongoose.model('Polygon', polygonSchema)
+	Polygon: Mongoose.model('Polygon', polygonSchema),
+	Circle: Mongoose.model('Circle', circleSchema)
 }

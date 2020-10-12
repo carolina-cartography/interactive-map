@@ -36,6 +36,10 @@ function MapProperties (schema) {
 			'type': String,
 			'required': true,
 		},
+		'tmsTiles': {
+			'type': Boolean,
+			'required': false,
+		},
     });
 };
 
@@ -44,7 +48,7 @@ function MapStaticMethods (schema) {
 
 	// Creates a new map in the database
 	schema.statics.create = function ({
-		id, name, user, description, coordinates, zoom, tiles
+		id, name, user, description, coordinates, zoom, tiles, tmsTiles
 	}, callback) {
 
 		// Save reference to model
@@ -73,7 +77,7 @@ function MapStaticMethods (schema) {
 					'$set': {
 						'guid': GUID,
 						'dateCreated': Dates.now(),
-						id, name, user, description, coordinates, zoom, tiles
+						id, name, user, description, coordinates, zoom, tiles, tmsTiles
 					}
 				};
 
@@ -98,7 +102,7 @@ function MapInstanceMethods (schema) {
 
 	// Updates an existing map
 	schema.methods.edit = function ({
-		id, name, description, coordinates, zoom, tiles
+		id, name, description, coordinates, zoom, tiles, tmsTiles
 	}, callback) {
 
 		// Save reference to model
@@ -119,6 +123,7 @@ function MapInstanceMethods (schema) {
 		if (coordinates) set.coordinates = coordinates;
 		if (zoom) set.zoom = zoom;
 		if (tiles) set.tiles = tiles;
+		if (tmsTiles !== undefined) set.tmsTiles = tmsTiles;
 		var update = {
 			'$set': set
 		};
@@ -135,11 +140,15 @@ function MapInstanceMethods (schema) {
 
 	// Deletes an existing map
 	schema.methods.delete = function (callback) {
+
+		// Save reference to model
 		var Map = this;
-		Database.delete({
-			'model': Map.constructor,
-			'guid': this.guid,
-		}, callback)
+
+		Map.deleteOne({
+			guid: this.guid,
+		}, function (err, map) {
+			callback(err, map);
+		});
 	};
 
 };

@@ -30,6 +30,7 @@ body {font-family: 'Work Sans', sans-serif;}
 		display:block; width:100%; max-width:480px; border:1px solid #ccc; 
 		font-size:16px; padding:4px 6px; line-height:1.4;
 	}
+	input[type="checkbox"] {width:auto;}
 	input[type="submit"] {margin-top:25px; max-width:100px;}
 	.field {
 		margin-top:10px;

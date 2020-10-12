@@ -4,7 +4,9 @@ const renderElement = props => {
 	const { type, value, rows, placeholder, handler } = props;
 	if (type === 'textarea')
 		return <textarea value={value} rows={rows} onChange={handler} placeholder={placeholder}></textarea>
-	else 
+	else if (type === 'checkbox')
+		return <input type={type} checked={value} onChange={handler} />
+ 	else 
 		return <input type={type} value={value} onChange={handler} placeholder={placeholder} />
 }
 
