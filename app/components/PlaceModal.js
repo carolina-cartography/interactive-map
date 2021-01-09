@@ -1,5 +1,7 @@
 import React from 'react'
 import Form from './Form'
+import Authentication from './../tools/Authentication'
+import Requests from './../tools/Requests'
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -9,27 +11,28 @@ export default class PlaceModal extends React.Component {
 
 	constructor(props) {
 		super(props)
-		this.close = this.close.bind(this)
 		this.formatRequest = this.formatRequest.bind(this)
 		this.onSuccess = this.onSuccess.bind(this)
+		this.delete = this.delete.bind(this)
+		this.edit = this.edit.bind(this)
+	}
+
+	state = {
+		isAdmin: Authentication.isAdmin(),
+		editMode: false,
+		deleting: false,
+		deleteError: null,
 	}
 
 	componentDidMount() {
 		this.setupModalMap()
 	}
 
-	componentWillUnmount() {
-	}
-
-	close() {
-		this.props.close()
-	}
-
 	formatRequest(request) {
-		const { newPlace, mapID } = this.props;
+		const { newPlace, mapGUID } = this.props;
 
 		const formattedRequest = {
-			map: mapID,
+			map: mapGUID,
 		};
 		formattedRequest.metadata = {};
 		
@@ -116,11 +119,28 @@ export default class PlaceModal extends React.Component {
 		}).addTo(map).bringToFront();
 	}
 
+	delete() {
+		const { place } = this.props;
+		this.setState({ deleting: true });
+		Requests.do("place.delete", {
+			guid: place.guid,
+		}).then(() => {
+			this.props.close(place, true)
+		}).catch(response => {
+			this.setState({ deleting: false, deleteError: response.message });
+		})
+	}
+
+	edit() {
+		this.setState({ editMode: true })
+	}
+
 	render() {
 		const { newPlace, place } = this.props;
+		const { isAdmin, deleting, deleteError } = this.state;
 		return (
 			<div className="modal-container">
-				<div className="underlay" onClick={this.close}></div>
+				<div className="underlay" onClick={this.props.close}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
 					{newPlace && <React.Fragment>
@@ -135,6 +155,17 @@ export default class PlaceModal extends React.Component {
 						/>
 					</React.Fragment>}
 					{place && <div className="info">
+						{isAdmin && <div className="admin-panel">
+							<span onClick={this.delete}>
+								{deleting
+									? "Deleting..."
+									: "Delete"}
+							</span>
+							{/* <span onClick={this.edit}>{"Edit"}</span> */}
+							{deleteError && <div className="admin-error">
+								{`Delete failed: ${deleteError}`}
+							</div>}
+						</div>}
 						{place.metadata
 							? <div className='metadata'>
 								{place.metadata.title

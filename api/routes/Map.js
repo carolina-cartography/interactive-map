@@ -180,21 +180,21 @@ module.exports = router => {
 
 			// Delete all places for map
 			(map, callback) => {
-				Place.deleteMany({ map: map.id }, (err) => {
+				Place.deleteMany({ map: map.guid }, (err) => {
 					callback(err, map)
 				})
 			},
 
 			// Delete all polygons for map
 			(map, callback) => {
-				Polygon.deleteMany({ map: map.id }, (err) => {
+				Polygon.deleteMany({ map: map.guid }, (err) => {
 					callback(err, map)
 				})
 			},
 
 			// Delete all circles for map
 			(map, callback) => {
-				Circle.deleteMany({ map: map.id }, (err) => {
+				Circle.deleteMany({ map: map.guid }, (err) => {
 					callback(err, map)
 				})
 			},

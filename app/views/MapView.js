@@ -24,6 +24,7 @@ export default class MapView extends View {
 		this.delete = this.delete.bind(this)
 		this.edit = this.edit.bind(this)
 		this.addPlaceToMap = this.addPlaceToMap.bind(this)
+		this.deletePlaceFromMap = this.deletePlaceFromMap.bind(this)
 	}
 
 	state = {
@@ -101,8 +102,6 @@ export default class MapView extends View {
 
 	addPlaceToMap(place) {
 
-		console.log(place)
-
 		// Setup a Leaflet object for a place or polygon
 		let leafletPlace
 		if (place.radius) {
@@ -130,10 +129,18 @@ export default class MapView extends View {
 		leafletPlace.addTo(map);
 	}
 
+	deletePlaceFromMap(place) {
+		map.eachLayer(layer => {
+			if (layer.options && layer.options.place && layer.options.place.guid == place.guid) {
+				map.removeLayer(layer)
+			} 
+		})
+	}
+
 	loadPlaces() {
 		// Get this map's places from the database
 		Requests.do('place.get', {
-			map: this.state.map.id,
+			map: this.state.map.guid,
 		}).then((response) => {
 
 			// For every place returned by database...
@@ -143,7 +150,7 @@ export default class MapView extends View {
 		}).catch((err) => {});
 	}
 
-	closeModal(place) {
+	closeModal(place, toDelete) {
 		const { newPlace } = this.state;
 
 		// If modal was opened for a new place...
@@ -155,6 +162,9 @@ export default class MapView extends View {
 			// If the place was saved, re-add with database place object
 			if (place) this.addPlaceToMap(place)
 		}
+
+		// If modal was closed by delete function...
+		if (toDelete) this.deletePlaceFromMap(place)
 		
 		// Create state
 		this.setState({ selectedPlace: null, newPlace: null });
@@ -208,7 +218,7 @@ export default class MapView extends View {
 					</div>}
 				</div>}
 				{showModal && <PlaceModal
-					mapID={this.state.map.id}
+					mapGUID={this.state.map.guid}
 					place={selectedPlace}
 					newPlace={newPlace}
 					close={this.closeModal}
