@@ -15,6 +15,7 @@ export default class PlaceModal extends React.Component {
 		this.onSuccess = this.onSuccess.bind(this)
 		this.delete = this.delete.bind(this)
 		this.edit = this.edit.bind(this)
+		this.overlayClick = this.overlayClick.bind(this)
 	}
 
 	state = {
@@ -135,12 +136,16 @@ export default class PlaceModal extends React.Component {
 		this.setState({ editMode: true })
 	}
 
+	overlayClick(event) {
+		this.props.close()
+	}
+
 	render() {
 		const { newPlace, place } = this.props;
 		const { isAdmin, deleting, deleteError } = this.state;
 		return (
 			<div className="modal-container">
-				<div className="underlay" onClick={this.props.close}></div>
+				<div className="underlay" onClick={this.overlayClick}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
 					{newPlace && <React.Fragment>
