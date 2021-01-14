@@ -22,15 +22,12 @@ module.exports = {
 		}))
 
 		// Middleware: Set headers
-		router.use(Cors())
-		router.use((req, res, next) => {
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
-			res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Authorization,Accept');
-			res.setHeader('Access-Control-Allow-Credentials', true);
-			next()
-		});
-		router.options('*', Cors())
+		router.use(Cors({
+			origin: false,
+		}))
+		router.options('*', Cors({
+			origin: false,
+		}))
 
 		// Import individual route collections
 		require('./routes/User')(router)
