@@ -1,5 +1,6 @@
 const BodyParser = require('body-parser')
 const Express = require('express')
+const Cors = require('cors')
 
 const Database = require('./tools/Database')
 const Messages = require('./tools/Messages')
@@ -21,13 +22,15 @@ module.exports = {
 		}))
 
 		// Middleware: Set headers
+		router.use(Cors())
 		router.use((req, res, next) => {
 			res.setHeader('Access-Control-Allow-Origin', '*');
 			res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
-			res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-type,Authorization');
+			res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Authorization,Accept');
 			res.setHeader('Access-Control-Allow-Credentials', true);
-			next();
+			next()
 		});
+		router.options('*', Cors())
 
 		// Import individual route collections
 		require('./routes/User')(router)
