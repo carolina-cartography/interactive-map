@@ -21,13 +21,9 @@ module.exports = {
 			limit: '20mb'
 		}))
 
-		// Middleware: Set headers
-		router.use(Cors({
-			origin: false,
-		}))
-		router.options('*', Cors({
-			origin: false,
-		}))
+		// Middleware: Setup CORS functionality (allows localhost)
+		router.use(Cors())
+		router.options('*', Cors())
 
 		// Import individual route collections
 		require('./routes/User')(router)
