@@ -18,7 +18,6 @@ export default class PlaceModal extends React.Component {
 	}
 
 	state = {
-		isAdmin: Authentication.isAdmin(),
 		editMode: false,
 		deleting: false,
 		deleteError: null,
@@ -127,7 +126,10 @@ export default class PlaceModal extends React.Component {
 	render() {
 		const { place } = this.props;
 		const { dbPlace } = place.options;
-		const { isAdmin, editMode, deleting, deleteError } = this.state;
+		const { editMode, deleting, deleteError } = this.state;
+
+		let canEdit = Authentication.isAdmin() ||
+			Authentication.getUser().guid === dbPlace.user;
 
 		let endpoint = "place.create"
 		let fields = {
@@ -157,7 +159,7 @@ export default class PlaceModal extends React.Component {
 						/>
 					</React.Fragment>}
 					{dbPlace && !editMode && <div className="info">
-						{isAdmin && <div className="admin-panel">
+						{canEdit && <div className="admin-panel">
 							<span onClick={this.delete}>
 								{deleting
 									? "Deleting..."
