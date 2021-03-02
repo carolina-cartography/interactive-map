@@ -23,6 +23,7 @@ export default class MapView extends View {
 		this.setupAuthenticatedMap = this.setupAuthenticatedMap.bind(this)
 		this.addPlaceToMap = this.addPlaceToMap.bind(this)
 		this.closeModal = this.closeModal.bind(this)
+		this.layerEdit = this.layerEdit.bind(this)
 	}
 
 	state = {
@@ -121,7 +122,8 @@ export default class MapView extends View {
 		}
 		
 		leafletPlace.on('click', e => {
-			this.setState({ selectedPlace: e.target });
+			if (this.editMode) this.stopLayerEdit(e)
+			else this.setState({ selectedPlace: e.target })
 		})
 
 		leafletPlace.addTo(map);
@@ -140,13 +142,26 @@ export default class MapView extends View {
 		this.setState({ selectedPlace: null });
 	}
 
+	layerEdit() {
+		const { selectedPlace } = this.state
+		selectedPlace.pm.enable()
+		this.editMode = true;
+		this.setState({ selectedPlace: null, status: 'Drag the place to change position. Click the place to finish.' })
+	}
+
+	stopLayerEdit(e) {
+		e.target.options.edited = true;
+		this.setState({ selectedPlace: e.target, status: null })
+		this.editMode = false
+	}
+
 	render() {
 		const { 
 			isAdmin, map, status, selectedPlace,
 		} = this.state;
 
 		return (
-			<div className={isAdmin ? "map-view admin" : "map-view"}>
+			<div className="map-view">
 				{status && 
 					<div className="status">{status}</div>}
 				{map && 
@@ -157,6 +172,7 @@ export default class MapView extends View {
 					map={this.state.map}
 					place={selectedPlace}
 					close={this.closeModal}
+					layerEdit={this.layerEdit}
 				/>}
 			</div>
 		);

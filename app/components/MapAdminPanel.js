@@ -35,7 +35,7 @@ export default class MapAdminPanel extends React.Component{
 	render() {
         const { deleting, deleteError } = this.state
 		return (
-			<div className="admin-panel">
+			<div className="admin-panel map-admin-panel">
                 <span onClick={this.delete}>
                     {deleting
                         ? "Deleting..."

@@ -13,7 +13,7 @@ export default class PlaceModal extends React.Component {
 		super(props)
 		this.formatRequest = this.formatRequest.bind(this)
 		this.delete = this.delete.bind(this)
-		this.edit = this.edit.bind(this)
+		this.editMetadata = this.editMetadata.bind(this)
 		this.overlayClick = this.overlayClick.bind(this)
 	}
 
@@ -42,35 +42,30 @@ export default class PlaceModal extends React.Component {
 			}
 		}
 
-		// If not already saved...
-		if (!dbPlace) {
+		// Add coordinates data to request
+		if (place._mRadius) {
+			formattedRequest.type = "circle"
+			formattedRequest.coordinates = [
+				place._latlng.lat,
+				place._latlng.lng
+			];
+			formattedRequest.radius = place._mRadius
+		} else if (place._latlng) {
+			formattedRequest.type = "point"
+			formattedRequest.coordinates = [
+				place._latlng.lat,
+				place._latlng.lng
+			];
+		} else if (place._latlngs) {
+			formattedRequest.type = "polygon"
+			let geojson = place.toGeoJSON()
+			formattedRequest.coordinates = geojson.geometry.coordinates;
+		}
 
-			// Add map GUID to request
-			formattedRequest.map = map.guid
-
-			// Add coordinates data to request
-			if (place._mRadius) {
-				formattedRequest.type = "circle"
-				formattedRequest.coordinates = [
-					place._latlng.lat,
-					place._latlng.lng
-				];
-				formattedRequest.radius = place._mRadius
-			} else if (place._latlng) {
-				formattedRequest.type = "point"
-				formattedRequest.coordinates = [
-					place._latlng.lat,
-					place._latlng.lng
-				];
-			} else if (place._latlngs) {
-				formattedRequest.type = "polygon"
-				let geojson = place.toGeoJSON()
-				formattedRequest.coordinates = geojson.geometry.coordinates;
-			}
-		} else {
-
-			// Add place guid to request
+		if (dbPlace) {
 			formattedRequest.guid = dbPlace.guid
+		} else {
+			formattedRequest.map = map.guid
 		}
 		
 		return formattedRequest
@@ -115,17 +110,17 @@ export default class PlaceModal extends React.Component {
 		})
 	}
 
-	edit() {
+	editMetadata() {
 		this.setState({ editMode: true })
 	}
 
 	overlayClick() {
-		this.props.close(null, false)
+		this.props.close()
 	}
 
 	render() {
 		const { place } = this.props;
-		const { dbPlace } = place.options;
+		const { dbPlace, edited } = place.options;
 		const { editMode, deleting, deleteError } = this.state;
 
 		let canEdit = Authentication.isAdmin() ||
@@ -142,12 +137,15 @@ export default class PlaceModal extends React.Component {
 			fields.description.value = dbPlace.metadata.description
 		}
 
+		let showForm = !dbPlace || editMode || edited;
+		let showInfo = dbPlace && !editMode && !edited;
+
 		return (
 			<div className="modal-container">
 				<div className="underlay" onClick={this.overlayClick}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
-					{(!dbPlace || editMode) && <React.Fragment>
+					{showForm && <React.Fragment>
 						<Form
 							endpoint={endpoint}
 							fields={fields}
@@ -158,28 +156,28 @@ export default class PlaceModal extends React.Component {
 							buttonText="Save"
 						/>
 					</React.Fragment>}
-					{dbPlace && !editMode && <div className="info">
-						{canEdit && <div className="admin-panel">
-							<span onClick={this.delete}>
-								{deleting
-									? "Deleting..."
-									: "Delete"}
-							</span>
-							<span onClick={this.edit}>{"Edit"}</span>
-							{deleteError && <div className="admin-error">
-								{`Delete failed: ${deleteError}`}
-							</div>}
+					{showInfo && <div className="info">
+						{dbPlace.metadata && <div className='metadata'>
+							{dbPlace.metadata.title
+								? <h1>{dbPlace.metadata.title}</h1>
+								: null}
+							{dbPlace.metadata.description
+								? <p>{dbPlace.metadata.description}</p>
+								: null}
+							{`Created by: ${dbPlace.userName}`}
 						</div>}
-						{dbPlace.metadata &&
-							<div className='metadata'>
-								{dbPlace.metadata.title
-									? <h1>{dbPlace.metadata.title}</h1>
-									: null}
-								{dbPlace.metadata.description
-									? <p>{dbPlace.metadata.description}</p>
-									: null}
-								{`Created by: ${dbPlace.userName}`}
-							</div>}
+					</div>}
+					{showInfo && canEdit && <div className="admin-panel">
+						<span onClick={this.delete}>
+							{deleting
+								? "Deleting..."
+								: "Delete"}
+						</span>
+						<span onClick={this.editMetadata}>{"Edit metadata"}</span>
+						<span onClick={this.props.layerEdit}>{"Edit position"}</span>
+						{deleteError && <div className="admin-error">
+							{`Delete failed: ${deleteError}`}
+						</div>}
 					</div>}
 				</div>
 			</div>

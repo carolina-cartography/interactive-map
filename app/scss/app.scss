@@ -69,24 +69,29 @@ header {
 	margin-top:30px; padding-bottom:30px;
 	h1 {margin-bottom:30px;}
 }
+
 .map-item {
 	border-top:1px solid #ddd; padding:20px 0px;
 }
+
+.admin-panel {
+	position:relative; background:#eee; text-align:center; padding:10px 0px;  
+	span {display:inline-block; margin:0px 14px; cursor:pointer;}
+	.admin-error {padding:10px 10px 0px;}
+}
+
 .map-view {
 	position:relative; width:100%; height:calc(100vh - 60px);
 	.status {position:absolute; bottom:20px; right:20px; padding:8px 12px; 
 		background:black; color:white; z-index:20;}
+	.map-admin-panel {position:absolute; top:0px; right:0px; max-width:240px;
+		background:black; color:white; text-align:right; z-index:20;}
 	#leaflet {width:100%; height:100%; background:black; z-index:10;}
 }
+
 .map-edit-container {
 	margin-bottom:30px;
 	#leaflet {margin-top:10px; width:100%; height:600px; background:black; z-index:10;}
-}
-.admin-panel {
-	position:absolute; top:0px; right:0px; padding:10px 0px; z-index:20; max-width:240px;
-	background:black; color:white; text-align:right;
-	span {display:inline-block; margin:0px 14px; cursor:pointer;}
-	.admin-error {padding:10px 10px 0px;}
 }
 
 .modal-container {
@@ -99,11 +104,6 @@ header {
 		.info {
 			position:relative; padding:20px;
 			h1 {font-size:24px;}
-			.admin-panel {
-				font-size:12px; padding:6px 0px;
-				span {margin:0px 8px;}
-				.admin-error {padding:6px 6px 0px;}
-			}
 		}
 		.form {
 			padding:20px 0px 0px;
