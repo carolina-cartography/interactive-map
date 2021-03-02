@@ -98,9 +98,7 @@ export default class MapView extends View {
 		});
 
 		map.on("pm:create", e => {
-			let place = e.layer;
-			place.options.newPlace = true
-			this.setState({ selectedPlace: place });
+			this.setState({ selectedPlace: e.layer });
 		})
 	}
 
@@ -129,21 +127,14 @@ export default class MapView extends View {
 		leafletPlace.addTo(map);
 	}
 
-	closeModal(dbPlace, toDelete) {
+	closeModal(dbPlace, remove) {
 		const { selectedPlace } = this.state;
 
-		// If modal was opened for a new place (no dbPlace in layer)...
-		if (selectedPlace.options.dbPlace === undefined) {
+		// Remove the original place if specified
+		if (remove) map.removeLayer(selectedPlace)
 
-			// Remove the original place
-			map.removeLayer(selectedPlace)
-
-			// If the place was saved, re-add with database place object
-			if (dbPlace) this.addPlaceToMap(dbPlace)
-		}
-
-		// Handle deletion
-		if (toDelete) map.removeLayer(selectedPlace)
+		// If the place was saved, re-add with latest database place object
+		if (dbPlace) this.addPlaceToMap(dbPlace)
 		
 		// Reset selectedPlace
 		this.setState({ selectedPlace: null });

@@ -12,10 +12,10 @@ const Validation = {
 	validateFieldLengths: function (fields, state) {
 		Object.entries(fields).forEach(([key, field]) => {
 			if (
-				(field.minLength && (!state[key] || state[key].length < field.minLength)) ||
-				(field.required && (!state[key] || state[key].length < 1))
+				(field.minLength && (!state.fieldValues[key] || state.fieldValues[key].length < field.minLength)) ||
+				(field.required && (!state.fieldValues[key] || state.fieldValues[key].length < 1))
 			) {
-				if (!state[key] || state[key].length < 1) state.fieldErrors[key] = `${field.title} is required`;
+				if (!state.fieldValues[key] || state.fieldValues[key].length < 1) state.fieldErrors[key] = `${field.title} is required`;
 				else state.fieldErrors[key] = `${field.title} is too short`;
 			}
 		})
@@ -32,7 +32,7 @@ const Validation = {
 	validateEmails: function (fields, state) {
 		Object.entries(fields).forEach(([key, field]) => {
 			if (field.type === 'email') {
-				if (!emailRegex.test(state[key])) {
+				if (!emailRegex.test(state.fieldValues[key])) {
 					state.fieldErrors[key] = 'Email address is not valid';
 				}
 			}

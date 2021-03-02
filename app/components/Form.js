@@ -18,16 +18,23 @@ class Form extends React.Component {
 	}
 
 	state = {
+		ready: false,
+		fieldValues: {},
 		fieldErrors: {}
 	}
 
 	componentDidMount() {
-		let newState = {};
 		const { fields } = this.props;
+		let fieldValues = {};
 		Object.entries(fields).forEach(([key, field]) => {
-			newState[key] = field.value
+			let value = field.value
+			if (value === null || value === undefined) {
+				if (field.type == "checkbox") value = true
+				else value = ""
+			}
+			fieldValues[key] = value
 		})
-		this.setState(newState)
+		this.setState({ ready: true, fieldValues })
 	}
 
 	getHandler = (key, field) => (event) => {
@@ -35,8 +42,8 @@ class Form extends React.Component {
 		const { fields } = this.props;
 		
 		// Add latest value
-		if (event.target.type === 'checkbox') state[key] = event.target.checked;
-		else state[key] = event.target.value;
+		if (event.target.type === 'checkbox') state.fieldValues[key] = event.target.checked;
+		else state.fieldValues[key] = event.target.value;
 
 		// Revalidate fields if current field is errored
 		if (state.fieldErrors[key]) 
@@ -61,8 +68,8 @@ class Form extends React.Component {
 		let request = {}
 		Object.entries(fields).forEach(([key, field]) => {
 			if (fields[key].prepare) 
-				request[key] = fields[key].prepare(state[key]);
-			else request[key] = state[key];
+				request[key] = fields[key].prepare(state.fieldValues[key]);
+			else request[key] = state.fieldValues[key];
 		})
 
 		// Format request
@@ -84,19 +91,20 @@ class Form extends React.Component {
 	}
 
 	render() {
-		const { fieldErrors, formError } = this.state;
-		const { title, fields, css } = this.props;
-		return (
-			<form className={`form ${css}`} onSubmit={this.handleSubmit}>
+		const { ready, fieldValues, fieldErrors, formError } = this.state;
+		const { title, fields, css, buttonText } = this.props;
+		if (ready) return (
+			<form className={`form ${css ? css : ''}`} onSubmit={this.handleSubmit}>
 				{title && <div className="title">{title}</div>}
 				{Object.entries(fields).map(([key, field]) => {
-					return <Field key={key} {...field} value={this.state[key]} 
+					return <Field key={key} {...field} value={fieldValues[key]} 
 						error={fieldErrors[key]} handler={this.getHandler(key, field)} />
 				})}
 				{formError && <div className="formError">{formError}</div>}
-				<input type="submit" value="Submit" />
+				<input type="submit" value={buttonText ? buttonText : 'Submit'} />
 			</form>
 		)
+		return null
   	}
 }
 

@@ -160,23 +160,17 @@ function PlaceInstanceMethods (schema) {
 		var set = {
 			lastModified: Dates.now(),
 		};
-		var unset = {}
 
 		// Setup database update with optional fields
 		if (coordinates) set.location = { coordinates };
-		if (radius) (set.radius) = radius;
-		if (metadata) {
-			for (var key in metadata) {
-				if (metadata[key] === null) unset[`metadata.${key}`] = true;
-				else set[`metadata.${key}`] = metadata[key];
-			}
-		}
+		if (radius) set.radius = radius;
+		if (metadata) set.metadata = metadata;
 
 		// Make database update
 		Database.update({
 			model: Place.constructor,
 			query: query,
-			update: {'$set': set, '$unset': unset},
+			update: {'$set': set},
 		}, function (err, place) {
 			callback(err, place);
 		});

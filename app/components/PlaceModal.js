@@ -31,10 +31,9 @@ export default class PlaceModal extends React.Component {
 	// Called by form with submit is pressed
 	formatRequest(request) {
 		const { place, map } = this.props;
+		const { dbPlace } = place.options;
 
-		const formattedRequest = {
-			map: map.guid,
-		};
+		const formattedRequest = {};
 		formattedRequest.metadata = {};
 		
 		// Form fills request with field data, transfer this to metadata
@@ -44,24 +43,35 @@ export default class PlaceModal extends React.Component {
 			}
 		}
 
-		// Add coordinates data to request
-		if (place._mRadius) {
-			formattedRequest.type = "circle"
-			formattedRequest.coordinates = [
-				place._latlng.lat,
-				place._latlng.lng
-			];
-			formattedRequest.radius = place._mRadius
-		} else if (place._latlng) {
-			formattedRequest.type = "point"
-			formattedRequest.coordinates = [
-				place._latlng.lat,
-				place._latlng.lng
-			];
-		} else if (place._latlngs) {
-			formattedRequest.type = "polygon"
-			let geojson = place.toGeoJSON()
-			formattedRequest.coordinates = geojson.geometry.coordinates;
+		// If not already saved...
+		if (!dbPlace) {
+
+			// Add map GUID to request
+			formattedRequest.map = map.guid
+
+			// Add coordinates data to request
+			if (place._mRadius) {
+				formattedRequest.type = "circle"
+				formattedRequest.coordinates = [
+					place._latlng.lat,
+					place._latlng.lng
+				];
+				formattedRequest.radius = place._mRadius
+			} else if (place._latlng) {
+				formattedRequest.type = "point"
+				formattedRequest.coordinates = [
+					place._latlng.lat,
+					place._latlng.lng
+				];
+			} else if (place._latlngs) {
+				formattedRequest.type = "polygon"
+				let geojson = place.toGeoJSON()
+				formattedRequest.coordinates = geojson.geometry.coordinates;
+			}
+		} else {
+
+			// Add place guid to request
+			formattedRequest.guid = dbPlace.guid
 		}
 		
 		return formattedRequest
@@ -95,11 +105,12 @@ export default class PlaceModal extends React.Component {
 
 	delete() {
 		const { place } = this.props;
+		const { dbPlace } = place.options;
 		this.setState({ deleting: true });
 		Requests.do("place.delete", {
-			guid: place.options.dbPlace.guid,
+			guid: dbPlace.guid,
 		}).then(() => {
-			this.props.close(place, true)
+			this.props.close(null, true)
 		}).catch(response => {
 			this.setState({ deleting: false, deleteError: response.message });
 		})
@@ -110,54 +121,63 @@ export default class PlaceModal extends React.Component {
 	}
 
 	overlayClick() {
-		this.props.close()
+		this.props.close(null, false)
 	}
 
 	render() {
 		const { place } = this.props;
-		const { isAdmin, deleting, deleteError } = this.state;
+		const { dbPlace } = place.options;
+		const { isAdmin, editMode, deleting, deleteError } = this.state;
+
+		let endpoint = "place.create"
+		let fields = {
+			title: { type: 'text', title: 'Title', required: true },
+			description: { type: 'textarea', title: 'Description', rows: 4 }
+		}
+		if (dbPlace) {
+			endpoint = "place.edit"
+			fields.title.value = dbPlace.metadata.title
+			fields.description.value = dbPlace.metadata.description
+		}
+
 		return (
 			<div className="modal-container">
 				<div className="underlay" onClick={this.overlayClick}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
-					{place.options.newPlace && <React.Fragment>
+					{(!dbPlace || editMode) && <React.Fragment>
 						<Form
-							endpoint="place.create"
-							fields={{
-								title: { type: 'text', title: 'Title', required: true },
-								description: { type: 'textarea', title: 'Description', rows: 4 }
-							}}
+							endpoint={endpoint}
+							fields={fields}
 							formatRequest={this.formatRequest}
 							onSuccess={response => {
-								this.props.close(response.place)
+								this.props.close(response.place, true)
 							}}
+							buttonText="Save"
 						/>
 					</React.Fragment>}
-					{place.options.dbPlace && <div className="info">
+					{dbPlace && !editMode && <div className="info">
 						{isAdmin && <div className="admin-panel">
 							<span onClick={this.delete}>
 								{deleting
 									? "Deleting..."
 									: "Delete"}
 							</span>
-							{/* <span onClick={this.edit}>{"Edit"}</span> */}
+							<span onClick={this.edit}>{"Edit"}</span>
 							{deleteError && <div className="admin-error">
 								{`Delete failed: ${deleteError}`}
 							</div>}
 						</div>}
-						{place.options.dbPlace.metadata
-							? <div className='metadata'>
-								{place.options.dbPlace.metadata.title
-									? <h1>{place.options.dbPlace.metadata.title}</h1>
+						{dbPlace.metadata &&
+							<div className='metadata'>
+								{dbPlace.metadata.title
+									? <h1>{dbPlace.metadata.title}</h1>
 									: null}
-								{place.options.dbPlace.metadata.description
-									? <p>{place.options.dbPlace.metadata.description}</p>
+								{dbPlace.metadata.description
+									? <p>{dbPlace.metadata.description}</p>
 									: null}
-							</div>
-							: null
-						}
-						{`Created by: ${place.options.dbPlace.userName}`}
+								{`Created by: ${dbPlace.userName}`}
+							</div>}
 					</div>}
 				</div>
 			</div>

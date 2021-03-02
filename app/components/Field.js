@@ -13,7 +13,7 @@ const renderElement = props => {
 export default function Field(props) {
 	const { type, title, css, instructions, error } = props;
 	return (
-		<div className={`field ${type} ${error ? 'error' : null} ${css}`}>
+		<div className={`field ${type} ${error ? 'error' : ''} ${css ? css : ''}`}>
 			{title && <div className='title'>{title}</div>}
 			{renderElement(props)}
 			{error && <div className="error">{error}</div>}

@@ -132,7 +132,7 @@ module.exports = router => {
 				var validations = [
 					Validation.string('GUID', req.body.guid)
 				];
-				if (req.body.coordinates) validations.push(Validtion.coordinates('Coordinates', req.body.coordinates))
+				if (req.body.coordinates) validations.push(Validation.coordinates('Coordinates', req.body.coordinates))
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
 				if (req.body.radius) validations.push(Validation.number('Radius', req.body.radius))
 				callback(Validation.catchErrors(validations), token)
