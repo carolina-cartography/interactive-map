@@ -5,14 +5,13 @@ import Requests from './../tools/Requests'
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-var map;
+var modalMap;
 
 export default class PlaceModal extends React.Component {
 
 	constructor(props) {
 		super(props)
 		this.formatRequest = this.formatRequest.bind(this)
-		this.onSuccess = this.onSuccess.bind(this)
 		this.delete = this.delete.bind(this)
 		this.edit = this.edit.bind(this)
 		this.overlayClick = this.overlayClick.bind(this)
@@ -29,102 +28,76 @@ export default class PlaceModal extends React.Component {
 		this.setupModalMap()
 	}
 
+	// Called by form with submit is pressed
 	formatRequest(request) {
-		const { newPlace, mapGUID } = this.props;
+		const { place, map } = this.props;
 
 		const formattedRequest = {
-			map: mapGUID,
+			map: map.guid,
 		};
 		formattedRequest.metadata = {};
 		
-		// Transfer existing keys to metadata
+		// Form fills request with field data, transfer this to metadata
 		for (var key in request) {
 			if (request.hasOwnProperty(key)) {
 				formattedRequest.metadata[key] = request[key];
 			}
 		}
 
-		// Add coordinates & map data to request
-		if (newPlace._mRadius) {
+		// Add coordinates data to request
+		if (place._mRadius) {
 			formattedRequest.type = "circle"
 			formattedRequest.coordinates = [
-				newPlace._latlng.lat,
-				newPlace._latlng.lng
+				place._latlng.lat,
+				place._latlng.lng
 			];
-			formattedRequest.radius = newPlace._mRadius
-		} else if (newPlace._latlng) {
+			formattedRequest.radius = place._mRadius
+		} else if (place._latlng) {
 			formattedRequest.type = "point"
 			formattedRequest.coordinates = [
-				newPlace._latlng.lat,
-				newPlace._latlng.lng
+				place._latlng.lat,
+				place._latlng.lng
 			];
-		} else if (newPlace._latlngs) {
+		} else if (place._latlngs) {
 			formattedRequest.type = "polygon"
-			let geojson = newPlace.toGeoJSON()
+			let geojson = place.toGeoJSON()
 			formattedRequest.coordinates = geojson.geometry.coordinates;
 		}
 		
 		return formattedRequest
 	}
 
-	onSuccess(response) {
-		this.props.close(response.place);
-	}
-
 	setupModalMap() {
-		const { newPlace, place } = this.props;
+		const { place, map } = this.props;
 
 		// Initialize map
-		map = L.map('modalMap', {
+		modalMap = L.map('modalMap', {
 			scrollWheelZoom: true
 		});
 
-		// Get new place or saved place coordinates
-		let pointCoordinates, polygonCoordinates, circleRadius
-		if (newPlace) {
-			if (newPlace._latlng && newPlace._mRadius) {
-				pointCoordinates = newPlace._latlng
-				circleRadius = newPlace._mRadius
-			} else if (newPlace._latlng) {
-				pointCoordinates = newPlace._latlng
-			} else if (newPlace._latlngs) {
-				polygonCoordinates = newPlace._latlngs
-			}
-		} else if (place) {
-			if (place.radius) {
-				pointCoordinates = place.location.coordinates
-				circleRadius = place.radius
-			} else if (place.location.type == "Point") {
-				pointCoordinates = place.location.coordinates
-			} else if (place.location.type == "Polygon") {
-				polygonCoordinates = place.location.coordinates
-			}
-		}
-
-		if (circleRadius) {
-			let circle = L.circle(pointCoordinates, { radius: circleRadius }).addTo(map)
-			// Note: circle.getBounds is throwing an exception here
-			// Come back and fix this later
-			map.setView(circle.getLatLng(), 10)
-		} else if (pointCoordinates) {
-			let point = L.marker(pointCoordinates).addTo(map)
-			map.setView(point.getLatLng(), 15);
-		} else if (polygonCoordinates) {
-			let polygon = L.polygon(polygonCoordinates).addTo(map)
-			map.fitBounds(polygon.getBounds())
-		}
-
 		// Add background layer at front on load
-		L.tileLayer(this.props.tiles, {
-			tms: this.props.tmsTiles,
-		}).addTo(map).bringToFront();
+		L.tileLayer(map.tiles, {
+			tms: map.tmsTiles,
+		}).addTo(modalMap).bringToFront();
+
+		// Add place to map, zoom on place
+		if (place._mRadius) {
+			L.circle(place._latlng, { radius: place._mRadius }).addTo(modalMap)
+			modalMap.fitBounds(place.getBounds())
+		} else if (place._latlngs) {
+			L.polygon(place._latlngs).addTo(modalMap)
+			modalMap.fitBounds(place.getBounds())
+		} else {
+			L.marker(place._latlng).addTo(modalMap)
+			modalMap.setView(place.getLatLng(), 15);
+		}
 	}
 
 	delete() {
 		const { place } = this.props;
 		this.setState({ deleting: true });
 		Requests.do("place.delete", {
-			guid: place.guid,
+			guid: place.options.dbPlace.guid,
 		}).then(() => {
 			this.props.close(place, true)
 		}).catch(response => {
@@ -136,19 +109,19 @@ export default class PlaceModal extends React.Component {
 		this.setState({ editMode: true })
 	}
 
-	overlayClick(event) {
+	overlayClick() {
 		this.props.close()
 	}
 
 	render() {
-		const { newPlace, place } = this.props;
+		const { place } = this.props;
 		const { isAdmin, deleting, deleteError } = this.state;
 		return (
 			<div className="modal-container">
 				<div className="underlay" onClick={this.overlayClick}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
-					{newPlace && <React.Fragment>
+					{place.options.newPlace && <React.Fragment>
 						<Form
 							endpoint="place.create"
 							fields={{
@@ -156,10 +129,12 @@ export default class PlaceModal extends React.Component {
 								description: { type: 'textarea', title: 'Description', rows: 4 }
 							}}
 							formatRequest={this.formatRequest}
-							onSuccess={this.onSuccess}
+							onSuccess={response => {
+								this.props.close(response.place)
+							}}
 						/>
 					</React.Fragment>}
-					{place && <div className="info">
+					{place.options.dbPlace && <div className="info">
 						{isAdmin && <div className="admin-panel">
 							<span onClick={this.delete}>
 								{deleting
@@ -171,18 +146,18 @@ export default class PlaceModal extends React.Component {
 								{`Delete failed: ${deleteError}`}
 							</div>}
 						</div>}
-						{place.metadata
+						{place.options.dbPlace.metadata
 							? <div className='metadata'>
-								{place.metadata.title
-									? <h1>{place.metadata.title}</h1>
+								{place.options.dbPlace.metadata.title
+									? <h1>{place.options.dbPlace.metadata.title}</h1>
 									: null}
-								{place.metadata.description
-									? <p>{place.metadata.description}</p>
+								{place.options.dbPlace.metadata.description
+									? <p>{place.options.dbPlace.metadata.description}</p>
 									: null}
 							</div>
 							: null
 						}
-						{`Created by: ${place.userName}`}
+						{`Created by: ${place.options.dbPlace.userName}`}
 					</div>}
 				</div>
 			</div>
