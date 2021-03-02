@@ -8,6 +8,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
+import MapAdminPanel from '../components/MapAdminPanel';
 
 // Initialize map outside of any function
 var map;
@@ -21,8 +22,6 @@ export default class MapView extends View {
 		this.setupMap = this.setupMap.bind(this)
 		this.setupAuthenticatedMap = this.setupAuthenticatedMap.bind(this)
 		this.loadPlaces = this.loadPlaces.bind(this)
-		this.delete = this.delete.bind(this)
-		this.edit = this.edit.bind(this)
 		this.addPlaceToMap = this.addPlaceToMap.bind(this)
 		this.deletePlaceFromMap = this.deletePlaceFromMap.bind(this)
 	}
@@ -170,27 +169,9 @@ export default class MapView extends View {
 		this.setState({ selectedPlace: null, newPlace: null });
 	}
 
-	delete() {
-		const { map } = this.state;
-		this.setState({ deleting: true });
-		Requests.do("map.delete", {
-			guid: map.guid,
-		}).then(response => {
-			this.props.history.push("/maps")
-		}).catch(response => {
-			this.setState({ deleting: false, deleteError: response.message });
-		})
-	}
-
-	edit() {
-		const { map } = this.state;
-		this.props.history.push(`/map/${map.id}/edit`);
-	}
-
 	render() {
 		const { 
 			isAdmin, map, loading, error, selectedPlace, newPlace,
-			deleting, deleteError,
 		} = this.state;
 
 		// Determine whether to show modal
@@ -200,23 +181,15 @@ export default class MapView extends View {
 		}
 
 		return (
-			<div className="map-view">
+			<div className={isAdmin ? "map-view admin" : "map-view"}>
 				{loading || error && <div className="status">
 					{loading && "Loading..."}
 					{error && `Error: ${error}`}
 				</div>}
-				{map && <div id="leaflet"></div>}
-				{map && isAdmin && <div className="admin-panel">
-					<span onClick={this.delete}>
-						{deleting
-							? "Deleting..."
-							: "Delete"}
-					</span>
-					<span onClick={this.edit}>{"Edit"}</span>
-					{deleteError && <div className="admin-error">
-						{`Delete failed: ${deleteError}`}
-					</div>}
-				</div>}
+				{map && 
+					<div id="leaflet"></div>}
+				{map && isAdmin && 
+					<MapAdminPanel map={map} history={this.props.history} />}
 				{showModal && <PlaceModal
 					mapGUID={this.state.map.guid}
 					place={selectedPlace}

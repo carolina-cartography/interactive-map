@@ -102,7 +102,7 @@ export default class MapEditView extends View {
 				<div className="container view">
 					<h1>{"Create a new map"}</h1>
 					<div className="map-edit-container">
-						{"Select the default position for your map:"}
+						{"Select the default center and zoom for your map:"}
 						<div id="leaflet"></div>
 					</div>
 					{fieldsSet && <Form 
