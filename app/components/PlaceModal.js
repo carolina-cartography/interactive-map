@@ -18,6 +18,7 @@ export default class PlaceModal extends React.Component {
 	}
 
 	state = {
+		user: Authentication.getUser(),
 		editMode: false,
 		deleting: false,
 		deleteError: null,
@@ -121,10 +122,9 @@ export default class PlaceModal extends React.Component {
 	render() {
 		const { place } = this.props;
 		const { dbPlace, edited } = place.options;
-		const { editMode, deleting, deleteError } = this.state;
+		const { user, editMode, deleting, deleteError } = this.state;
 
-		let canEdit = Authentication.isAdmin() ||
-			Authentication.getUser().guid === dbPlace.user;
+		let canEdit = Authentication.isAdmin() || (dbPlace && user && user.guid === dbPlace.user);
 
 		let endpoint = "place.create"
 		let fields = {
