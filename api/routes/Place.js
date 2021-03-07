@@ -118,6 +118,7 @@ module.exports = router => {
 		req.handled = true;
 
 		// Synchronously perform the following tasks...
+		let model;
 		Async.waterfall([
 
 			// Authenticate user
@@ -130,7 +131,8 @@ module.exports = router => {
 			// Validate parameters
 			(token, callback) => {
 				var validations = [
-					Validation.string('GUID', req.body.guid)
+					Validation.string('GUID', req.body.guid),
+					Validation.placeType('type', req.body.type),
 				];
 				if (req.body.coordinates) validations.push(Validation.coordinates('Coordinates', req.body.coordinates))
 				if (req.body.metadata) validations.push(Validation.metadata('Metadata', req.body.metadata))
@@ -140,7 +142,20 @@ module.exports = router => {
 
 			// Find place to edit, validate if user owns it
 			(token, callback) => {
-				Place.findOne({
+				switch(req.body.type) {
+					case "point":
+						model = Place;
+						break;
+					case "polygon":
+						model = Polygon;
+						break;
+					case "circle":
+						model = Circle;
+						break;
+					default:
+						return callback("Invalid place type")
+				}
+				model.findOne({
 					'guid': req.body.guid
 				}, (err, place) => {
 					if (!place) callback(Secretary.requestError(Messages.conflictErrors.objectNotFound));
