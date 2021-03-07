@@ -29,7 +29,7 @@ class Form extends React.Component {
 		Object.entries(fields).forEach(([key, field]) => {
 			let value = field.value
 			if (value === null || value === undefined) {
-				if (field.type == "checkbox") value = true
+				if (field.type == "checkbox") value = false
 				else value = ""
 			}
 			fieldValues[key] = value
