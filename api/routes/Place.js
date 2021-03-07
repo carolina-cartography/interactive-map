@@ -159,14 +159,16 @@ module.exports = router => {
 					'guid': req.body.guid
 				}, (err, place) => {
 					if (!place) callback(Secretary.requestError(Messages.conflictErrors.objectNotFound));
-					else if (place.user !== token.user) callback(Secretary.authorizationError(Messages.authErrors.noAccess));
-					else callback(err, place)
+					else if (!Authentication.isAdminEmail(token.email) && place.user !== token.user) 
+						callback(Secretary.authorizationError(Messages.authErrors.noAccess));
+					else callback(err, token, place)
 				})
 			},
 
 			// Edit place, add to reply
-			(place, callback) => {
+			(token, place, callback) => {
 				place.edit({
+					'userGUID': token.user,
 					'coordinates': req.body.coordinates,
 					'radius': req.body.radius,
 					'metadata': req.body.metadata,
@@ -206,7 +208,8 @@ module.exports = router => {
 					'guid': req.body.guid
 				}, (err, place) => {
 					if (!place) callback(Secretary.requestError(Messages.conflictErrors.objectNotFound));
-					else if (place.user !== token.user) callback(Secretary.authorizationError(Messages.authErrors.noAccess));
+					else if (!Authentication.isAdminEmail(token.email) && place.user !== token.user) 
+						callback(Secretary.authorizationError(Messages.authErrors.noAccess));
 					else callback(err, place)
 				})
 			},

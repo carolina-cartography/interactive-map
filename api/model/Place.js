@@ -18,6 +18,9 @@ const baseSchema = {
 		'type': Object,
 		'default': {},
 	},
+	'lastModifiedBy': {
+		'type': String,
+	},
 }
 
 function PlaceProperties (schema) {
@@ -146,7 +149,7 @@ function PlaceInstanceMethods (schema) {
 		});
 	};
 
-	schema.methods.edit = function ({coordinates, radius, metadata}, callback) {
+	schema.methods.edit = function ({userGUID, coordinates, radius, metadata}, callback) {
 
 		// Save reference to model
 		var Place = this;
@@ -159,6 +162,7 @@ function PlaceInstanceMethods (schema) {
 		// Setup database update with required fields
 		var set = {
 			lastModified: Dates.now(),
+			lastModifiedBy: userGUID,
 		};
 
 		// Setup database update with optional fields
