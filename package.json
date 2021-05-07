@@ -40,7 +40,7 @@
     "react-leaflet": "^2.6.3",
     "react-router-dom": "^5.1.2",
     "request": "^2.88.2",
-    "underscore": "^1.10.2",
+    "underscore": "^1.12.1",
     "uuid": "^3.4.0"
   },
   "devDependencies": {
