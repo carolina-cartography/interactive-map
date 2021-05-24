@@ -47,7 +47,7 @@ body {font-family: 'Work Sans', sans-serif;}
 }
 
 header {
-	@include clearfix; background:#eee;
+	@include clearfix; background:#eee; position:relative;
 	.container.map-container {padding:0px 20px;}
 	.logo {
 		float:left; line-height:60px; font-size:22px; font-weight:bold;
@@ -57,11 +57,29 @@ header {
 		.menu {
 			display:inline-block;
 			a {display:inline-block; margin-left:30px; line-height:40px; padding-top:10px;}
-			&.user_menu {float:right;}
+			&.user-menu {float:right;}
 		}
 	}
+	.mobile-nav-toggle {
+		display:none; float:right; font-size:18px; line-height:60px;
+	}
+
+	@include breakpoint(m) {
+		.navigation .menu a {margin-left:20px;}
+	}
 	@include breakpoint(s) {
-		.navigation {display:none;} // For now
+		.logo {max-width:200px; font-size:18px; line-height:20px; padding:10px 0px;}
+		.navigation {
+			display:none;
+			&.expanded {display:block; transition:all 0.3s ease;}
+			position:absolute; left:0px; top:100%; width:100%; background:#ddd; z-index:50;
+			.menu {
+				display:block;
+				a {display:block; margin:0px; padding:2px 20px; font-size:18px;}
+				&.user-menu {float:none;}
+			}
+		}
+		.mobile-nav-toggle {display:block;}
 	}
 }
 
