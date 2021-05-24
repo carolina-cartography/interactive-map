@@ -5,6 +5,7 @@ import _ from 'underscore'
 import Field from './Field'
 import Validation from './../tools/Validation'
 import Requests from './../tools/Requests'
+import FieldRepeater from './FieldRepeater'
 
 class Form extends React.Component {
 	static propTypes = {
@@ -37,11 +38,15 @@ class Form extends React.Component {
 		this.setState({ ready: true, fieldValues })
 	}
 
+	getRepeaterRowHandler = (key, field) => (event) => {
+
+	}
+
 	getHandler = (key, field) => (event) => {
 		const state = this.state;
 		const { fields } = this.props;
 		
-		// Add latest value
+		// Handle fields by type
 		if (event.target.type === 'checkbox') state.fieldValues[key] = event.target.checked;
 		else state.fieldValues[key] = event.target.value;
 
@@ -97,7 +102,12 @@ class Form extends React.Component {
 			<form className={`form ${css ? css : ''}`} onSubmit={this.handleSubmit}>
 				{title && <div className="title">{title}</div>}
 				{Object.entries(fields).map(([key, field]) => {
-					return <Field key={key} {...field} value={fieldValues[key]} 
+					if (field.type === 'repeater')
+						return <FieldRepeater key={key} {...field} 
+							handler={this.getHandler(key, field)} 
+							addRepeaterRow={this.getRepeaterRowHandler(key, field)} 
+						/>
+					return <Field key={key} name={key} {...field} value={fieldValues[key]} 
 						error={fieldErrors[key]} handler={this.getHandler(key, field)} />
 				})}
 				{formError && <div className="formError">{formError}</div>}
