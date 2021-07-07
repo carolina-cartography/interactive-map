@@ -1,13 +1,13 @@
 import React from 'react'
 
 const renderElement = props => {
-	const { type, value, rows, placeholder, handler } = props;
+	const { name, type, value, rows, placeholder, handler } = props;
 	if (type === 'textarea')
-		return <textarea value={value} rows={rows} onChange={handler} placeholder={placeholder}></textarea>
+		return <textarea key={name} value={value} rows={rows} onChange={handler} placeholder={placeholder}></textarea>
 	else if (type === 'checkbox')
-		return <input type={type} checked={value} onChange={handler} />
+		return <input key={name} type={type} checked={value} onChange={handler} />
  	else 
-		return <input type={type} value={value} onChange={handler} placeholder={placeholder} />
+		return <input key={name} type={type} value={value} onChange={handler} placeholder={placeholder} />
 }
 
 export default function Field(props) {

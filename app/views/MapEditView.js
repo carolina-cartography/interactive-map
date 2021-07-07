@@ -7,11 +7,12 @@ import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import Form from '../components/Form';
 import Requests from '../tools/Requests';
+import { clone } from '../tools/Helpers';
 
 // Initialize map outside of any function
 var map;
 var mapObject
-const fields = {
+const fieldsTemplate = {
 	name: { type: 'text', title: 'Name' },
 	id: { type: 'text', title: 'ID (used for this map\'s URL)'},
 	description: { type: 'textarea', title: 'Description' },
@@ -21,6 +22,19 @@ const fields = {
 		placeholder: "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
 	},
 	tmsTiles: { type: 'checkbox', title: 'TMS Tiles' },
+	metadata: {
+		type: 'repeater',
+		title: 'Metadata',
+		fields: {
+			name: { type: 'text', title: 'Name' },
+			inputType: { type: 'select', title: 'Input type', options: [
+				{ name: 'text', title: 'Text' },
+				{ name: 'textarea', title: 'Paragraph' },
+				{ name: 'checkbox', title: 'Checkbox' }
+			]}
+		},
+		rows: [],
+	}
 }
 
 export default class MapEditView extends View {
@@ -33,21 +47,37 @@ export default class MapEditView extends View {
 
 	state = {
 		endpoint: '',
-		fields: null,
 	}
 
 	componentDidMount() {
-		this.setupMap()
-		if (this.props.match.params.id) this.setupEditView()
-		else this.setupCreateView();
+		this._isMounted = true;
+		this.initialize(this.props.location)
+		this.props.history.listen((location) => {
+			this.initialize(location)
+		})
+	}
+	
+	componentWillUnmount() {
+		this._isMounted = false;
+	}
+
+	initialize(location) {
+		this.setState({ fields: null }, () => {
+			this.setupMap()
+			if (location.pathname && location.pathname.includes("edit")) 
+				this.setupEditView()
+			else this.setupCreateView();
+		})
 	}
 
 	setupEditView() {
-		this.setState({ loading: true })
+		if (this._isMounted) this.setState({ loading: true })
 		Requests.do("map.get", {
 			id: this.props.match.params.id,
 		}).then((response) => {
 			mapObject = response.map
+			
+			let fields = clone(fieldsTemplate)
 
 			// Populate saved fields
 			fields.id.value = mapObject.id
@@ -58,17 +88,18 @@ export default class MapEditView extends View {
 			// Set map center
 			map.setView(mapObject.coordinates, mapObject.zoom)
 
-			this.setState({ fieldsSet: true, endpoint: 'map.edit', loading: false })
+			if (this._isMounted) this.setState({ fields, endpoint: 'map.edit', loading: false })
 		}).catch((response) => {
-			this.setState({ loading: false, error: response.message })
+			if (this._isMounted) this.setState({ loading: false, error: response.message })
 		})
 	}
 
 	setupCreateView() {
-		this.setState({ fieldsSet: true, endpoint: 'map.create' })
+		if (this._isMounted) this.setState({ fields: clone(fieldsTemplate), endpoint: 'map.create' })
 	}
 
 	setupMap() {
+		if (map !== undefined) map.remove();
 		map = L.map('leaflet', {
 			scrollWheelZoom: false
 		});
@@ -96,16 +127,17 @@ export default class MapEditView extends View {
 	}
 
 	render() {
-		const { fieldsSet, endpoint } = this.state;
+		const { fields, endpoint } = this.state;
 		return (
 			<React.Fragment>
 				<div className="container view">
-					<h1>{"Create a new map"}</h1>
+					{endpoint.includes('create') && <h1>{"Create a new map"}</h1>}
+					{endpoint.includes('edit') && <h1>{"Edit map"}</h1>}
 					<div className="map-edit-container">
 						{"Select the default center and zoom for your map:"}
 						<div id="leaflet"></div>
 					</div>
-					{fieldsSet && <Form 
+					{fields && <Form 
 						endpoint={endpoint}
 						fields={fields} 
 						formatRequest={this.formatRequest}
