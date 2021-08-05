@@ -141,7 +141,7 @@ export default class PlaceModal extends React.Component {
 		let showInfo = dbPlace && !editMode && !edited;
 
 		return (
-			<div className="modal-container">
+			<div className="place-modal modal-container">
 				<div className="underlay" onClick={this.overlayClick}></div>
 				<div className="modal">
 					<div id="modalMap"></div>
@@ -168,16 +168,18 @@ export default class PlaceModal extends React.Component {
 						</div>}
 					</div>}
 					{showInfo && canEdit && <div className="admin-panel">
-						<span onClick={this.delete}>
-							{deleting
-								? "Deleting..."
-								: "Delete"}
-						</span>
-						<span onClick={this.editMetadata}>{"Edit metadata"}</span>
-						<span onClick={this.props.layerEdit}>{"Edit position"}</span>
-						{deleteError && <div className="admin-error">
-							{`Delete failed: ${deleteError}`}
-						</div>}
+						<div className="admin-panel-buttons">
+							<span onClick={this.delete}>
+								{deleting
+									? "Deleting..."
+									: "Delete"}
+							</span>
+							<span onClick={this.editMetadata}>{"Edit metadata"}</span>
+							<span onClick={this.props.layerEdit}>{"Edit position"}</span>
+							{deleteError && <div className="admin-error">
+								{`Delete failed: ${deleteError}`}
+							</div>}
+						</div>
 					</div>}
 				</div>
 			</div>
