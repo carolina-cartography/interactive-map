@@ -1,5 +1,6 @@
 import React from 'react'
 import Requests from '../tools/Requests'
+import ImportModal from './ImportModal'
 
 export default class MapAdminPanel extends React.Component{
 
@@ -8,11 +9,13 @@ export default class MapAdminPanel extends React.Component{
 
         this.delete = this.delete.bind(this)
 		this.edit = this.edit.bind(this)
+        this.toggleImportModal = this.toggleImportModal.bind(this)
     }
 
     state = {
         deleting: false,
         deleteError: null,
+        showImportModal: false,
     }
 
     delete() {
@@ -32,19 +35,27 @@ export default class MapAdminPanel extends React.Component{
 		this.props.history.push(`/map/${map.id}/edit`);
 	}
 
+    toggleImportModal() {
+        this.setState({ showImportModal: !this.state.showImportModal });
+    }
+
 	render() {
-        const { deleting, deleteError } = this.state
+        const { deleting, deleteError, showImportModal } = this.state
 		return (
 			<div className="admin-panel map-admin-panel">
-                <span onClick={this.delete}>
-                    {deleting
-                        ? "Deleting..."
-                        : "Delete map"}
-                </span>
-                <span onClick={this.edit}>{"Edit map"}</span>
-                {deleteError && <div className="admin-error">
-                    {`Delete failed: ${deleteError}`}
-                </div>}
+                {showImportModal && <ImportModal map={this.props.map} close={this.toggleImportModal} />}
+                <div className="admin-panel-buttons">
+                    <span onClick={this.delete}>
+                        {deleting
+                            ? "Deleting..."
+                            : "Delete map"}
+                    </span>
+                    <span onClick={this.edit}>{"Edit map"}</span>
+                    <span onClick={this.toggleImportModal}>{"Import data"}</span>
+                    {deleteError && <div className="admin-error">
+                        {`Delete failed: ${deleteError}`}
+                    </div>}
+                </div>
             </div>
 		);
 	}

@@ -13,7 +13,7 @@
 // Resets & Basic Classes
 html, body {margin:0px; padding:0px; width:100%; min-height:100%;}
 h1, h2, h3 {margin:0px; color:inherit; font-family:inherit;}
-input, textarea {
+input, textarea, select {
 	font-family:inherit;
 	&:focus {outline: none;}
 }
@@ -92,18 +92,29 @@ header {
 	border-top:1px solid #ddd; padding:20px 0px;
 }
 
+.padded {padding:20px;}
+
 .admin-panel {
-	position:relative; background:#eee; text-align:center; padding:10px 0px;  
-	span {display:inline-block; margin:0px 14px; cursor:pointer;}
-	.admin-error {padding:10px 10px 0px;}
+	position:relative;
+	.admin-panel-buttons {
+		padding:10px 0px; background:#eee; text-align:center;
+		span {display:inline-block; margin:0px 14px; cursor:pointer;}
+		.admin-error {padding:10px 10px 0px;}
+		@include breakpoint(s) {
+			font-size:14px; 
+			span {margin:0px 8px;}
+		}
+	}
 }
 
 .map-view {
 	position:relative; width:100%; height:calc(100vh - 60px);
 	.status {position:absolute; bottom:20px; right:20px; padding:8px 12px; 
 		background:black; color:white; z-index:20;}
-	.map-admin-panel {position:absolute; top:0px; right:0px; max-width:240px;
-		background:black; color:white; text-align:right; z-index:20;}
+	.map-admin-panel {
+		position:absolute; top:0px; right:0px; max-width:100%; z-index:20;
+		.admin-panel-buttons {background:black; color:white; text-align:right;}
+	}
 	#leaflet {width:100%; height:100%; background:black; z-index:10;}
 }
 
@@ -117,7 +128,13 @@ header {
 	display:flex; justify-content:center; align-items:center;
 	.underlay {position:absolute; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:30;}
 	.modal {
-		position:relative; width:400px; background:white; z-index:40;
+		position:relative; background:white; z-index:40; max-height:90%; overflow-y:scroll;
+	}
+}
+
+.place-modal {
+	.modal {
+		width:400px;
 		#modalMap {width:100%; height:150px;}
 		.info {
 			position:relative; padding:20px;
@@ -129,6 +146,19 @@ header {
 			input[type=submit] {
 				padding:15px 0px; border:0px; background:#00b488; color:white; cursor:pointer; max-width:100%;
 			}
+		}
+	}
+}
+
+.import-modal {
+	.modal {width:600px;}
+	.import-form {
+		background:#eee;
+		table {
+			width:100%; margin:10px 0px;
+			th {text-align:left;}
+			input, select {width:100%;}
+			td {line-height:1.4}
 		}
 	}
 }

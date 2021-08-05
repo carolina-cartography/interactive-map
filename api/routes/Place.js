@@ -181,6 +181,28 @@ module.exports = router => {
 		], err => next(err));
 	})
 
+	router.post('/place.import', (req, res, next) => {
+		req.handled = true;
+
+		// Synchronously perform the following tasks...
+		Async.waterfall([
+
+			// Authenticate user
+			callback => {
+				Authentication.authenticateUser(req, function (err, token) {
+					callback(err, token);
+				});
+			},
+
+			
+			(token, callback) => {
+				console.log(req.body)
+				callback()
+			}
+
+		], err => next(err));
+	})
+
 	router.post('/place.delete', (req, res, next) => {
 		req.handled = true;
 
