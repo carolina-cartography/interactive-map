@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interactive-map
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: interactive-map
+  template:
+    metadata:
+      labels:
+        app: interactive-map
+    spec:
+      containers:
+      - name: main
+        image: $IMAGE
+        ports:
+        - containerPort: 3002
+          protocol: TCP
+        env:
+        - name: port
+          value: '3002'
+        envFrom:
+        - secretRef:
+            name: interactive-map-secret
+        - configMapRef:
+            name: interactive-map-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interactive-map
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3002
+    protocol: TCP
+    targetPort: 3002
+  selector:
+    app: interactive-map
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: interactive-map-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - maps.carolinacartography.org
+    secretName: interactive-map-tls-cert
+  rules:
+  - host: maps.carolinacartography.org
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: interactive-map
+            port:
+              number: 3002
