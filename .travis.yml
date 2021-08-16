@@ -28,11 +28,10 @@ before_deploy:
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 - docker tag "$IMAGE:$TRAVIS_BUILD_NUMBER" "$IMAGE:latest"
 - docker image push --all-tags $IMAGE
-- envsubst < kube.yaml > kube-merged.yaml
 
 deploy:
 - provider: script
   skip_cleanup: true
-  script: kubectl apply -f kube-merged.yaml
+  script: kubectl set image deployment/interactive-map "main=$IMAGE:$TRAVIS_BUILD_NUMBER"
   on:
     branch: main
