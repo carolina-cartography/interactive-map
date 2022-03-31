@@ -31,7 +31,7 @@
     "jsonwebtoken": "^8.5.1",
     "leaflet": "^1.6.0",
     "moment": "^2.24.0",
-    "mongoose": "^5.11.11",
+    "mongoose": "^6.2.9",
     "morgan": "^1.10.0",
     "password-hash": "^1.2.2",
     "prop-types": "^15.7.2",

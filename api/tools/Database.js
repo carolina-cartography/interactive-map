@@ -7,9 +7,7 @@ module.exports = {
 		const auth = `${process.env.mongo_user}:${process.env.mongo_pass}`
 		return Mongoose.connect(`mongodb://${auth}@${process.env.mongo_host}/${process.env.mongo_name}`, {
 			useNewUrlParser: true,
-			useUnifiedTopology: true,
-			useCreateIndex: true,
-			useFindAndModify: false,
+			useUnifiedTopology: true
 		}).then(() => {
 			process.stdout.write(' done!\n')
 		}).catch(err => {
