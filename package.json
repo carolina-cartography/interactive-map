@@ -23,7 +23,7 @@
   "homepage": "https://github.com/carolina-cartography/interactive-map#readme",
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "^2.5.0",
-    "async": "^3.2.0",
+    "async": "^3.2.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
